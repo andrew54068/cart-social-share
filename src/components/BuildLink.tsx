@@ -9,6 +9,8 @@ import getMethodData from 'src/utils/getMethodData';
 import MinusIcon from 'src/assets/minus.svg?react';
 import Input from './Input';
 import { useToast, Button as ChakraButton, Flex, Tag, VStack, Box, Text, Card } from '@chakra-ui/react';
+import Loading from 'src/components/Loading'
+
 
 const generateReadableCallData = (methodData: any) => {
   return methodData.name
@@ -21,6 +23,7 @@ const App: React.FC = () => {
 
   const toast = useToast()
   const [txLink, setTxLink] = useState<string>('')
+  const [loading, setLoading] = useState<boolean>(false)
   const [readyForSharing, setReadyForSharing] = useState<boolean>(false)
   const [txDataWithMethodInfo, setTxDataWithMethodInfo] = useState<{
     to: string,
@@ -48,7 +51,7 @@ const App: React.FC = () => {
   };
 
   const onClickGenerate = async () => {
-    //@todo: add loading state
+    setLoading(true)
     const hasEmptyLink = txHashes.some((link) => link === '');
     const hasInvalidLink = txHashes.some((link) => !link.startsWith('0x') || link.length !== 66);
 
@@ -108,7 +111,8 @@ const App: React.FC = () => {
     })
 
     setTxDataWithMethodInfo(replacedTxAndMethodData)
-    setTxLink(window.location.origin + "/view?txInfo=" + encodeURIComponent(JSON.stringify(txDataWithMethodInfo)))
+    setTxLink(window.location.origin + "/view?txInfo=" + encodeURIComponent(JSON.stringify(replacedTxAndMethodData)))
+    setLoading(false)
   }
 
   const handleCopy = () => {
@@ -184,7 +188,6 @@ const App: React.FC = () => {
           Add
         </Button>
 
-        {/* <Tag onClick={handleRemoveLastLink} cursor="pointer">-</Tag> */}
       </Flex>
       <Card
         boxShadow='2xl'
@@ -209,6 +212,19 @@ const App: React.FC = () => {
                 'Your link will be shown here'}
           />
         </Box>
+        {loading && <Flex
+          pos="absolute"
+          top="0"
+          right="0"
+          bottom="0"
+          left="0"
+          bg="rgba(255,255,255,0.5)"
+          alignItems="center"
+          justifyContent="center"
+          zIndex={1}
+        >
+          <Loading />
+        </Flex>}
         {readyForSharing ? <>
           <Button mb="space.m" onClick={handleCopy}> Copy </Button>
           <Button colorScheme="twitter" variant="secondary" onClick={() => shareToTwitter('Share the link', txLink)}>Post on Twitter</Button></> :

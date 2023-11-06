@@ -7,6 +7,8 @@ import {
   IconButton,
   List,
 } from "@chakra-ui/react";
+import Button from "src/components/Button";
+import copy from 'copy-text-to-clipboard';
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import useClickAway from "src/hooks/useClickAway";
@@ -101,10 +103,13 @@ export default function Navbar() {
             </Link>
 
             <ListItem onClick={account ? undefined : connect}>
-              <Flex alignItems="center">
+              <Flex alignItems="center" justify="space-between">
                 <Box as="span" ml="space.s">
                   {account ? `${formatAddress(account)} ` : "Connect Wallet"}
                 </Box>
+                {account && <Button onClick={() => copy(account)} w="auto" variant="outline">
+                  Copy Address
+                </Button>}
               </Flex>
             </ListItem>
 
