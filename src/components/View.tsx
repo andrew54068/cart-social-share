@@ -6,6 +6,7 @@ import queryString from 'query-string';
 import { bloctoSDK } from 'src/services/evm';
 import strip0x from 'src/utils/strip0x';
 import toHex from 'src/utils/toHex';
+import { web3 } from 'src/services/evm';
 import { useEthereum } from "src/services/evm";
 import WalletIcon from 'src/assets/wallet.svg?react';
 
@@ -59,7 +60,7 @@ const ViewTransaction: React.FC = () => {
 
     setIsLoading(true)
 
-    const batchTransactions = displayTxInfo.map((tx) => {
+    const rawTx = displayTxInfo.map((tx) => {
       return {
         from: account,
         to: tx.to,
@@ -67,6 +68,17 @@ const ViewTransaction: React.FC = () => {
         value: tx.value ? `0x${toHex(Number(tx.value))}` : '0x0'
       }
     })
+
+    const batchTransactions = await Promise.all(
+      rawTx.map(async (tx) => {
+        return {
+          eth: "eth_sendTransaction",
+          params: [tx],
+        };
+      }),
+    );
+
+
 
     try {
       await bloctoSDK.ethereum.request({
