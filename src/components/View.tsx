@@ -6,7 +6,6 @@ import queryString from 'query-string';
 import { bloctoSDK } from 'src/services/evm';
 import strip0x from 'src/utils/strip0x';
 import toHex from 'src/utils/toHex';
-import { web3 } from 'src/services/evm';
 import { useEthereum } from "src/services/evm";
 import WalletIcon from 'src/assets/wallet.svg?react';
 
