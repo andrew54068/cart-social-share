@@ -115,7 +115,7 @@ const App: React.FC = () => {
   }
 
   const handleCopy = () => {
-    const shareUrl = window.location.host + "/view?txInfo=" + JSON.stringify(txDataWithMethodInfo)
+    const shareUrl = window.location.origin + "/view?txInfo=" + JSON.stringify(txDataWithMethodInfo)
     navigator.clipboard
       .writeText(shareUrl)
     toast({
