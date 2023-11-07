@@ -8,7 +8,6 @@ import {
   List,
 } from "@chakra-ui/react";
 import Button from "src/components/Button";
-import copy from 'copy-text-to-clipboard';
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import useClickAway from "src/hooks/useClickAway";
@@ -43,8 +42,10 @@ export default function Navbar() {
   }, [showDropdown]);
 
 
-  const onClickBuild = () => {
-  };
+  const onClickCopyAccount = () => {
+    navigator.clipboard
+      .writeText(account || '')
+  }
 
   return (
     <Flex
@@ -92,7 +93,7 @@ export default function Navbar() {
         >
           <List bgColor="white" fontWeight={500}>
 
-            <Link to="/build-link" onClick={onClickBuild}>
+            <Link to="/build-link" >
               <ListItem>
                 <Flex alignItems="center">
                   <Box as="span" ml="space.s">
@@ -104,10 +105,10 @@ export default function Navbar() {
 
             <ListItem onClick={account ? undefined : connect}>
               <Flex alignItems="center" justify="space-between">
-                <Box as="span" ml="space.s">
+                <Box as="span" ml="space.s" >
                   {account ? `${formatAddress(account)} ` : "Connect Wallet"}
                 </Box>
-                {account && <Button onClick={() => copy(account)} w="auto" variant="outline">
+                {account && <Button onClick={onClickCopyAccount} w="auto" variant="outline">
                   Copy Address
                 </Button>}
               </Flex>

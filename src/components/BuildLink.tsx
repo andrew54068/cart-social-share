@@ -3,7 +3,6 @@ import Button from './Button';
 import getTxInfo from 'src/utils/getTxInfo';
 import getABI from 'src/utils/getABI';
 import strip0x from 'src/utils/strip0x';
-import copy from 'copy-text-to-clipboard';
 import { ADDR_PLACEHOLDER } from 'src/constants';
 import getMethodData from 'src/utils/getMethodData';
 import MinusIcon from 'src/assets/minus.svg?react';
@@ -117,7 +116,8 @@ const App: React.FC = () => {
 
   const handleCopy = () => {
     const shareUrl = window.location.host + "/view?txInfo=" + JSON.stringify(txDataWithMethodInfo)
-    copy(shareUrl)
+    navigator.clipboard
+      .writeText(shareUrl)
     toast({
       description: "Your link has been copied to clipboard.",
       status: 'success',
