@@ -40,6 +40,8 @@ const ViewTransaction: React.FC = () => {
 
   useEffect(() => {
     const parsed = queryString.parse(location.search);
+
+    console.log(' :parsed.txInfo', parsed.txInfo);
     const txInfo: TransactionInfo[] = JSON.parse(parsed.txInfo as string || '[]');
     if (!account) return
     // replace all ADDR_PLACEHOLDER with the address of the user
@@ -71,7 +73,7 @@ const ViewTransaction: React.FC = () => {
     const batchTransactions = await Promise.all(
       rawTx.map(async (tx) => {
         return {
-          eth: "eth_sendTransaction",
+          method: "eth_sendTransaction",
           params: [tx],
         };
       }),
