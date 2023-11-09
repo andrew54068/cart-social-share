@@ -7,6 +7,8 @@ import { bloctoSDK } from 'src/services/evm';
 import strip0x from 'src/utils/strip0x';
 import toHex from 'src/utils/toHex';
 import { useEthereum } from "src/services/evm";
+import getDoNothingTxData from 'src/utils/getDoNothingTxData'
+import { DISCOUNT_CONTRACT_OP } from 'src/constants';
 import WalletIcon from 'src/assets/wallet.svg?react';
 
 import { ADDR_PLACEHOLDER } from 'src/constants';
@@ -61,7 +63,15 @@ const ViewTransaction: React.FC = () => {
 
     setIsLoading(true)
 
-    const rawTx = displayTxInfo.map((tx) => {
+    const rawTx = [
+      ...displayTxInfo,
+      {
+        from: account,
+        to: DISCOUNT_CONTRACT_OP,
+        data: getDoNothingTxData(),
+        value: '0x0'
+      }
+    ].map((tx) => {
       return {
         from: account,
         to: tx.to,
@@ -78,8 +88,6 @@ const ViewTransaction: React.FC = () => {
         };
       }),
     );
-
-
 
     try {
       await bloctoSDK.ethereum.request({
