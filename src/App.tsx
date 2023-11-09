@@ -1,5 +1,6 @@
-import { BrowserRouter, Route, Routes, } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import theme from "./theme";
+import { useEffect } from 'react'
 import { ChakraProvider, Box } from '@chakra-ui/react';
 import './App.css';
 import Navbar from './components/Navbar'
@@ -7,9 +8,15 @@ import View from './components/View'
 import BuildLink from './components/BuildLink'
 import NotFound from './components/NotFound'
 import { GlobalProvider } from './context/globalContextProvider'
-
+import { logPageView } from "src/services/Amplitude";
 
 function App() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    logPageView(pathname);
+  }, [pathname]);
+
   return (
     <GlobalProvider>
       <ChakraProvider theme={theme}>
