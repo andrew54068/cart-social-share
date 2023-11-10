@@ -23,5 +23,6 @@
     "baseUrl": "."
   },
   "include": ["src"],
+  "exclude": ["prettierrc"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
