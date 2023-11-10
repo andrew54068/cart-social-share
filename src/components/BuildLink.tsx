@@ -9,6 +9,14 @@ import MinusIcon from 'src/assets/minus.svg?react';
 import Input from './Input';
 import { useToast, Button as ChakraButton, Flex, Tag, VStack, Box, Text, Card } from '@chakra-ui/react';
 import Loading from 'src/components/Loading'
+import {
+  logClickCopyLink,
+  logClickGenerateLink,
+  logClickAddButton,
+  logEnterTransactionHash,
+  logViewBuildPage,
+  logClickPostToTwitter
+} from 'src/services/Amplitude'
 
 
 const generateReadableCallData = (methodData: any) => {
@@ -33,12 +41,17 @@ const App: React.FC = () => {
   }[]>([])
 
   useEffect(() => {
+    logViewBuildPage()
+  }, [])
+
+  useEffect(() => {
     setReadyForSharing(!!txLink)
   }, [txLink])
 
   const handleAddLink = () => {
     setTxHashes((prev) => [...prev, '']);
     setTxLink('')
+    logClickAddButton()
   };
 
   const handleChangeLink = (index: number, value: string) => {
@@ -67,6 +80,7 @@ const App: React.FC = () => {
 
     const chainId = 10
 
+    // resolve the intent of transaction
     const requests: any[] = []
     for (const txInfo of txResult) {
       const request = async (txInfo) => {
@@ -109,6 +123,17 @@ const App: React.FC = () => {
       return { ...methodData, data: tempData }
     })
 
+    const logData = replacedTxAndMethodData.reduce((acc, txData) => {
+      acc.txHashes = [acc.txHashes, txData.txHash].filter(Boolean).join(',');
+      acc.methodNames = [acc.methodNames, txData.methodData?.name].filter(Boolean).join(',');
+      return acc;
+    }, {
+      txHashes: '',
+      methodNames: ''
+    });
+
+    logClickGenerateLink(logData)
+
     setTxDataWithMethodInfo(replacedTxAndMethodData)
     setTxLink(window.location.origin + "/view?txInfo=" + encodeURIComponent(JSON.stringify(replacedTxAndMethodData)))
     setLoading(false)
@@ -124,6 +149,7 @@ const App: React.FC = () => {
       duration: 3000,
       position: 'top'
     })
+    logClickCopyLink()
   }
 
   const onRemoveTx = (index) => () => {
@@ -142,6 +168,11 @@ const App: React.FC = () => {
     const twitterURL = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedURL}`;
 
     window.open(twitterURL, '_blank');
+  }
+
+  const onHashInputChange = (index) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleChangeLink(index, e.target.value);
+    logEnterTransactionHash()
   }
 
   return (
@@ -164,7 +195,7 @@ const App: React.FC = () => {
           <Flex alignItems='center' w="100%" mb="space.xs">
             <Input
               value={hash}
-              onChange={(e) => handleChangeLink(index, e.target.value)}
+              onChange={onHashInputChange(index)}
               placeholder="Enter transaction hash here"
               rightElement={
                 <ChakraButton variant="secondary" w="32px" h="32px" color="icon.primary" p="space.m" minWidth="0" borderRadius="6px" onClick={onRemoveTx(index)} >
@@ -227,7 +258,10 @@ const App: React.FC = () => {
         </Flex>}
         {readyForSharing ? <>
           <Button mb="space.m" onClick={handleCopy}> Copy </Button>
-          <Button colorScheme="twitter" variant="secondary" onClick={() => shareToTwitter('Share the link', txLink)}>Post on Twitter</Button></> :
+          <Button colorScheme="twitter" variant="secondary" onClick={() => {
+            shareToTwitter('Share the link', txLink)
+            logClickPostToTwitter()
+          }}>Post on Twitter</Button></> :
           <Button onClick={onClickGenerate}>Generate Link</Button>
         }
       </Card>

@@ -13,6 +13,7 @@ export default async function getTxInfo(txHashes: string[]):
         to: txResult.to,
         value: `${Number(txResult.value)}`,
         from: txResult.from,
+        txHash
       };
     })
   );

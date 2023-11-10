@@ -10,6 +10,12 @@ import { useEthereum } from "src/services/evm";
 import getDoNothingTxData from 'src/utils/getDoNothingTxData'
 import { DISCOUNT_CONTRACT_OP } from 'src/constants';
 import WalletIcon from 'src/assets/wallet.svg?react';
+import {
+  logViewLinkPage,
+  logClickTxDetail,
+  logClickSendTx,
+  logFinishSendTx
+} from 'src/services/Amplitude'
 
 import { ADDR_PLACEHOLDER } from 'src/constants';
 
@@ -41,6 +47,10 @@ const ViewTransaction: React.FC = () => {
 
 
   useEffect(() => {
+    logViewLinkPage()
+  }, [])
+
+  useEffect(() => {
     const parsed = queryString.parse(location.search);
 
     console.log(' :parsed.txInfo', parsed.txInfo);
@@ -60,7 +70,7 @@ const ViewTransaction: React.FC = () => {
 
 
   const onClickSendTx = async () => {
-
+    logClickSendTx()
     setIsLoading(true)
 
     const rawTx = [
@@ -90,11 +100,11 @@ const ViewTransaction: React.FC = () => {
     );
 
     try {
-      await bloctoSDK.ethereum.request({
+      const txHash = await bloctoSDK.ethereum.request({
         method: "blocto_sendBatchTransaction",
         params: batchTransactions,
       });
-
+      logFinishSendTx(txHash)
     } catch (err) {
       console.error(err)
     }
@@ -114,9 +124,9 @@ const ViewTransaction: React.FC = () => {
                 boxShadow="0px 0px 20px 0px rgba(35, 37, 40, 0.05);"
               >
 
-                <AccordionItem border={0} width="100%">
+                <AccordionItem border={0} width="100%" onClick={logClickTxDetail}>
                   <h2>
-                    <AccordionButton p="space.l" >
+                    <AccordionButton p="space.l">
                       <Box as="span" flex='1' textAlign='left' fontSize="size.heading.5" fontWeight="600" >
                         {tx?.methodData.name ? `Possible Intent: ${tx?.methodData.name}` : 'Transaction - ' + index}
                       </Box>
