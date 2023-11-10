@@ -9,8 +9,11 @@ import {
   Box,
   VStack,
   Text,
+  useToast,
+  Icon,
 } from "@chakra-ui/react";
-import { useLocation } from "react-router-dom";
+import { WarningIcon, SmallCloseIcon } from "@chakra-ui/icons";
+import { Link, useLocation } from "react-router-dom";
 import Button from "src/components/Button";
 import queryString from "query-string";
 import { bloctoSDK, useEthereum } from "src/services/evm";
@@ -19,6 +22,7 @@ import toHex from "src/utils/toHex";
 import getDoNothingTxData from "src/utils/getDoNothingTxData";
 import { DISCOUNT_CONTRACT_OP, ADDR_PLACEHOLDER } from "src/constants";
 import WalletIcon from "src/assets/wallet.svg?react";
+import useScanTxLink from "src/hooks/useScanTxLink";
 import {
   logViewLinkPage,
   logClickTxDetail,
@@ -52,6 +56,8 @@ const ViewTransaction: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [displayTxInfo, setDisplayTxInfo] = useState<TransactionInfo[]>([]);
 
+  const toast = useToast();
+
   useEffect(() => {
     logViewLinkPage();
   }, []);
@@ -78,6 +84,8 @@ const ViewTransaction: React.FC = () => {
     setDisplayTxInfo(transformedTxInfo);
   }, [account, location.search]);
 
+  // we only support optimism for now
+  const scanTxLink = useScanTxLink(10);
   const onClickSendTx = async () => {
     logClickSendTx();
     setIsLoading(true);
@@ -112,6 +120,41 @@ const ViewTransaction: React.FC = () => {
       const txHash = await bloctoSDK.ethereum.request({
         method: "blocto_sendBatchTransaction",
         params: batchTransactions,
+      });
+      toast({
+        status: "success",
+        position: "top",
+        duration: null,
+        isClosable: true,
+        containerStyle: {
+          marginTop: "20px",
+        },
+        render: () => (
+          <Flex
+            alignItems="center"
+            bg="green.500"
+            color="white"
+            padding="20px"
+            borderRadius="12px"
+          >
+            <Link
+              to={scanTxLink + txHash}
+              target="_blank"
+              style={{ textDecoration: "underline" }}
+            >
+              <Icon as={WarningIcon} mr="8px" />
+              Your Transaction is successfully sent!
+            </Link>
+            <Box
+              onClick={() => toast.closeAll()}
+              ml="8px"
+              cursor="pointer"
+              p="4px"
+            >
+              <SmallCloseIcon />
+            </Box>
+          </Flex>
+        ),
       });
       logFinishSendTx(txHash);
     } catch (err) {

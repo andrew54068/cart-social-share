@@ -5,7 +5,6 @@ module.exports = {
     "eslint:recommended",
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
-    "plugin:jsx-a11y/recommended",
     "plugin:@typescript-eslint/recommended",
     "eslint-config-prettier",
     "plugin:prettier/recommended"
@@ -20,5 +19,8 @@ module.exports = {
     ],
     "@typescript-eslint/no-explicit-any": "warn",
     "max-len": ["warn", { code: 80, ignoreComments: true }],
+    "react/react-in-jsx-scope": "off",
+    "react/jsx-uses-react": "off",
+    "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx", ".ts", ".tsx"] }],
   }
 }
