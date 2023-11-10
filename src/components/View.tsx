@@ -23,12 +23,7 @@ import getDoNothingTxData from "src/utils/getDoNothingTxData";
 import { DISCOUNT_CONTRACT_OP, ADDR_PLACEHOLDER } from "src/constants";
 import WalletIcon from "src/assets/wallet.svg?react";
 import useScanTxLink from "src/hooks/useScanTxLink";
-import {
-  logViewLinkPage,
-  logClickTxDetail,
-  logClickSendTx,
-  logFinishSendTx,
-} from "src/services/Amplitude";
+import { logViewLinkPage, logClickTxDetail, logClickSendTx, logFinishSendTx } from "src/services/Amplitude";
 
 interface TxParameter {
   name: string;
@@ -66,16 +61,11 @@ const ViewTransaction: React.FC = () => {
     const parsed = queryString.parse(location.search);
 
     console.log(" :parsed.txInfo", parsed.txInfo);
-    const txInfo: TransactionInfo[] = JSON.parse(
-      (parsed.txInfo as string) || "[]"
-    );
+    const txInfo: TransactionInfo[] = JSON.parse((parsed.txInfo as string) || "[]");
     if (!account) return;
     // replace all ADDR_PLACEHOLDER with the address of the user
     const transformedTxInfo = txInfo.map((tx) => {
-      const tempTx = tx.data.replace(
-        new RegExp(`${ADDR_PLACEHOLDER}`, "g"),
-        strip0x(account)
-      );
+      const tempTx = tx.data.replace(new RegExp(`${ADDR_PLACEHOLDER}`, "g"), strip0x(account));
       return {
         ...tx,
         data: tempTx,
@@ -130,27 +120,12 @@ const ViewTransaction: React.FC = () => {
           marginTop: "20px",
         },
         render: () => (
-          <Flex
-            alignItems="center"
-            bg="green.500"
-            color="white"
-            padding="20px"
-            borderRadius="12px"
-          >
-            <Link
-              to={scanTxLink + txHash}
-              target="_blank"
-              style={{ textDecoration: "underline" }}
-            >
+          <Flex alignItems="center" bg="green.500" color="white" padding="20px" borderRadius="12px">
+            <Link to={scanTxLink + txHash} target="_blank" style={{ textDecoration: "underline" }}>
               <Icon as={WarningIcon} mr="8px" />
               Your Transaction is successfully sent!
             </Link>
-            <Box
-              onClick={() => toast.closeAll()}
-              ml="8px"
-              cursor="pointer"
-              p="4px"
-            >
+            <Box onClick={() => toast.closeAll()} ml="8px" cursor="pointer" p="4px">
               <SmallCloseIcon />
             </Box>
           </Flex>
@@ -183,16 +158,8 @@ const ViewTransaction: React.FC = () => {
               <AccordionItem border={0} width="100%" onClick={logClickTxDetail}>
                 <h2>
                   <AccordionButton p="space.l">
-                    <Box
-                      as="span"
-                      flex="1"
-                      textAlign="left"
-                      fontSize="size.heading.5"
-                      fontWeight="600"
-                    >
-                      {tx?.methodData.name
-                        ? `Possible Intent: ${tx?.methodData.name}`
-                        : "Transaction - " + index}
+                    <Box as="span" flex="1" textAlign="left" fontSize="size.heading.5" fontWeight="600">
+                      {tx?.methodData.name ? `Possible Intent: ${tx?.methodData.name}` : "Transaction - " + index}
                     </Box>
                     <AccordionIcon />
                   </AccordionButton>
@@ -226,12 +193,7 @@ const ViewTransaction: React.FC = () => {
           ))}
         </Accordion>
       ) : (
-        <Flex
-          direction="column"
-          alignItems="center"
-          h="calc(100vh - 75px)"
-          mt="80px"
-        >
+        <Flex direction="column" alignItems="center" h="calc(100vh - 75px)" mt="80px">
           <WalletIcon width="72px" height="72px" />
           <Text mt="space.s" mb="space.3xl" textAlign="center">
             You need to connect your wallet to view your transaction.
@@ -242,20 +204,8 @@ const ViewTransaction: React.FC = () => {
         </Flex>
       )}
 
-      <Box
-        pos="fixed"
-        bottom="0"
-        left="0"
-        right="0"
-        bg="white"
-        p="20px"
-        boxShadow="2xl"
-      >
-        <Button
-          onClick={onClickSendTx}
-          isDisabled={!account}
-          isLoading={isLoading}
-        >
+      <Box pos="fixed" bottom="0" left="0" right="0" bg="white" p="20px" boxShadow="2xl">
+        <Button onClick={onClickSendTx} isDisabled={!account} isLoading={isLoading}>
           Send Tx
         </Button>
       </Box>

@@ -6,8 +6,7 @@ import { GlobalContext } from "../context/global";
 import { logConnectWalletSuccess } from "src/services/Amplitude";
 // import { setUserId as setAmplitudeUserId } from "./Amplitude/setting";
 
-export interface ExtendedEthereumProviderInterface
-  extends EthereumProviderInterface {
+export interface ExtendedEthereumProviderInterface extends EthereumProviderInterface {
   enable: () => Promise<any>;
   chainId: string;
 }
@@ -127,8 +126,7 @@ export const useEthereum = (): {
   connect: () => Promise<any>;
   disconnect: () => Promise<any>;
 } => {
-  const { setAccount, account, setChainId, chainId, } =
-    useContext(GlobalContext);
+  const { setAccount, account, setChainId, chainId } = useContext(GlobalContext);
   useEffect(() => {
     const handleAccountsChanged = (accounts: string[]) => {
       setAccount(accounts[0]);
@@ -184,12 +182,11 @@ export const useEthereum = (): {
       setAccount(accounts[0]);
 
       if (accounts.length > 0) {
-        logConnectWalletSuccess()
+        logConnectWalletSuccess();
       }
 
       return accounts;
     },
-    disconnect: () =>
-      bloctoSDK.ethereum.request({ method: "wallet_disconnect" }),
+    disconnect: () => bloctoSDK.ethereum.request({ method: "wallet_disconnect" }),
   };
 };

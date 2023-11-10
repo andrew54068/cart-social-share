@@ -12,8 +12,7 @@ const bounce = keyframes`
 `;
 
 const Dot = ({ delayMultiplier = 0 }: { delayMultiplier?: number }) => {
-  const animation = `${bounce} 1.4s infinite ${delayMultiplier * 0.16
-    }s ease-in-out both`;
+  const animation = `${bounce} 1.4s infinite ${delayMultiplier * 0.16}s ease-in-out both`;
 
   return (
     <Box
@@ -39,8 +38,7 @@ const fadeOut = keyframes`
 `;
 
 const DotInText = ({ delayMultiplier = 0 }: { delayMultiplier?: number }) => {
-  const animation = `${fadeOut} 1.4s infinite ${delayMultiplier * 0.16
-    }s ease-in-out`;
+  const animation = `${fadeOut} 1.4s infinite ${delayMultiplier * 0.16}s ease-in-out`;
 
   return (
     <Text as="span" animation={animation}>
@@ -60,12 +58,7 @@ const LinearSpinner = ({
   let Comp = Dot;
   if (type === "text") Comp = DotInText;
   return (
-    <Flex
-      as={type === "text" ? "span" : undefined}
-      justifyContent="center"
-      alignItems="center"
-      {...rest}
-    >
+    <Flex as={type === "text" ? "span" : undefined} justifyContent="center" alignItems="center" {...rest}>
       {type === "text" && content}
       {Array.from({ length: 3 }).map((_, i) => (
         <Comp key={i} delayMultiplier={i} />

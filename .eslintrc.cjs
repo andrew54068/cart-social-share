@@ -18,7 +18,7 @@ module.exports = {
       { allowConstantExport: true },
     ],
     "@typescript-eslint/no-explicit-any": "warn",
-    "max-len": ["warn", { code: 80, ignoreComments: true }],
+    "max-len": ["warn", { code: 120, ignoreComments: true }],
     "react/react-in-jsx-scope": "off",
     "react/jsx-uses-react": "off",
     "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx", ".ts", ".tsx"] }],

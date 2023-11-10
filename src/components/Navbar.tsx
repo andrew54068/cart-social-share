@@ -1,12 +1,5 @@
 import { HamburgerIcon } from "@chakra-ui/icons";
-import {
-  Box,
-  ListItem as ChakraListItem,
-  Collapse,
-  Flex,
-  IconButton,
-  List,
-} from "@chakra-ui/react";
+import { Box, ListItem as ChakraListItem, Collapse, Flex, IconButton, List } from "@chakra-ui/react";
 import Button from "src/components/Button";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -38,22 +31,19 @@ export default function Navbar() {
 
   const ref = useClickAway(() => setShowDropdown(false));
   const toggleDropdown = () => {
-    logClickMenu()
-    setShowDropdown(!showDropdown)
+    logClickMenu();
+    setShowDropdown(!showDropdown);
   };
 
-  useEffect(() => {
-  }, [showDropdown]);
-
+  useEffect(() => {}, [showDropdown]);
 
   const onClickCopyAccount = () => {
-    navigator.clipboard
-      .writeText(account || '')
-  }
+    navigator.clipboard.writeText(account || "");
+  };
   const onClickConnect = () => () => {
-    account ? undefined : connect()
-    logClickConnectWallet()
-  }
+    account ? undefined : connect();
+    logClickConnectWallet();
+  };
 
   return (
     <Flex
@@ -69,16 +59,9 @@ export default function Navbar() {
     >
       <Flex justify="space-between" alignItems="center" width="100%">
         <Box fontSize="size.heading.4" fontWeight="weight.l">
-          <Link to="/build-link" >
-            Build Transaction Link
-          </Link>
+          <Link to="/build-link">Build Transaction Link</Link>
         </Box>
-        <IconButton
-          onClick={toggleDropdown}
-          aria-label="menu-button"
-          icon={<HamburgerIcon />}
-          variant="outline"
-        />
+        <IconButton onClick={toggleDropdown} aria-label="menu-button" icon={<HamburgerIcon />} variant="outline" />
       </Flex>
       {/* Dropdown menu on mobile */}
       <Collapse
@@ -100,8 +83,7 @@ export default function Navbar() {
           boxShadow="0px 4px 8px rgba(0, 0, 0, 0.05)"
         >
           <List bgColor="white" fontWeight={500}>
-
-            <Link to="/build-link" >
+            <Link to="/build-link">
               <ListItem>
                 <Flex alignItems="center" onClick={() => logClickBuildYourLink()}>
                   <Box as="span" ml="space.s">
@@ -113,23 +95,26 @@ export default function Navbar() {
 
             <ListItem onClick={onClickConnect}>
               <Flex alignItems="center" justify="space-between">
-                <Box as="span" ml="space.s" >
+                <Box as="span" ml="space.s">
                   {account ? `${formatAddress(account)} ` : "Connect Wallet"}
                 </Box>
-                {account && <Button onClick={onClickCopyAccount} w="auto" variant="outline">
-                  Copy Address
-                </Button>}
+                {account && (
+                  <Button onClick={onClickCopyAccount} w="auto" variant="outline">
+                    Copy Address
+                  </Button>
+                )}
               </Flex>
             </ListItem>
 
-            {account && <ListItem onClick={disconnect}>
-              <Flex alignItems="center">
-                <Box as="span" ml="space.s">
-                  Disconnect
-                </Box>
-              </Flex>
-            </ListItem>}
-
+            {account && (
+              <ListItem onClick={disconnect}>
+                <Flex alignItems="center">
+                  <Box as="span" ml="space.s">
+                    Disconnect
+                  </Box>
+                </Flex>
+              </ListItem>
+            )}
           </List>
         </Box>
       </Collapse>

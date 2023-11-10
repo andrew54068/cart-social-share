@@ -44,15 +44,16 @@ const networkScanInfo: NetworkScanInfo[] = [
   {
     chainID: 10,
     name: "Optimism",
-    api: `https://api-optimistic.etherscan.io/api?module=contract&action=
-    getabi&apikey=${import.meta.env.VITE_OPTIMISM_API_KEY}`,
+    api:
+      "https://api-optimistic.etherscan.io/api" +
+      encodeURI(`?module=contract&action=getabi&apikey=${import.meta.env.VITE_OPTIMISM_API_KEY}`),
     scan: "https://optimistic.etherscan.io",
   },
   {
     chainID: 137,
     name: "Polygon",
     api: `https://api.polygonscan.com/api?module=contract&action=getabi&apikey=
-    ${import.meta.env.VITE_POLYGONSCAN_API_KEY}`,
+  ${import.meta.env.VITE_POLYGONSCAN_API_KEY}`,
     scan: "https://api.polygonscan.com",
   },
 ];

@@ -1,7 +1,6 @@
-
-import { Box, Menu, MenuList, MenuItem, MenuButton, IconButton } from '@chakra-ui/react';
-import { Link } from 'react-router-dom';
-import { HamburgerIcon } from '@chakra-ui/icons';
+import { Box, Menu, MenuList, MenuItem, MenuButton, IconButton } from "@chakra-ui/react";
+import { Link } from "react-router-dom";
+import { HamburgerIcon } from "@chakra-ui/icons";
 
 const HamburgerMenu: React.FC = () => {
   return (
@@ -30,11 +29,9 @@ const HamburgerMenu: React.FC = () => {
 };
 
 export default function Header() {
-
-
-  return <Box as="header" bg="teal.500" p={4} color="white" w="100%">
-    <HamburgerMenu />
-  </Box>
-
-
+  return (
+    <Box as="header" bg="teal.500" p={4} color="white" w="100%">
+      <HamburgerMenu />
+    </Box>
+  );
 }

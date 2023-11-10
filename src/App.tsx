@@ -1,13 +1,13 @@
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes, useLocation } from "react-router-dom";
 import theme from "./theme";
-import { useEffect } from 'react'
-import { ChakraProvider, Box } from '@chakra-ui/react';
-import './App.css';
-import Navbar from './components/Navbar'
-import View from './components/View'
-import BuildLink from './components/BuildLink'
-import NotFound from './components/NotFound'
-import { GlobalProvider } from './context/globalContextProvider'
+import { useEffect } from "react";
+import { ChakraProvider, Box } from "@chakra-ui/react";
+import "./App.css";
+import Navbar from "./components/Navbar";
+import View from "./components/View";
+import BuildLink from "./components/BuildLink";
+import NotFound from "./components/NotFound";
+import { GlobalProvider } from "./context/globalContextProvider";
 import { logPageView } from "src/services/Amplitude";
 
 function App() {
@@ -31,8 +31,8 @@ function App() {
           </Box>
         </Box>
       </ChakraProvider>
-    </GlobalProvider >
-  )
+    </GlobalProvider>
+  );
 }
 
-export default App
+export default App;

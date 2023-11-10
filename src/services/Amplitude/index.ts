@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 
-export * from './log'
+export * from "./log";
 
 import * as amplitude from "@amplitude/analytics-browser";
 import noop from "lodash/noop";
@@ -25,5 +25,3 @@ export const initAmplitude = () => {
 };
 
 export const setUserId = (userId) => getInstance().setUserId(userId);
-
-

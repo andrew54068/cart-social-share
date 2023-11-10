@@ -1,20 +1,13 @@
 import { getInstance } from "./index";
 
-const IS_LOCAL =
-  import.meta.env.VITE_ENV === "local" || !import.meta.env.VITE_ENV;
+const IS_LOCAL = import.meta.env.VITE_ENV === "local" || !import.meta.env.VITE_ENV;
 
-const logCore = (
-  name: string,
-  rawProperties: { [key: string]: unknown } = {},
-) => {
+const logCore = (name: string, rawProperties: { [key: string]: unknown } = {}) => {
   // strip undefined fields
   const properties = Object.assign({}, rawProperties);
-  Object.keys(properties).forEach(
-    (key) => properties[key] === undefined && delete properties[key],
-  );
+  Object.keys(properties).forEach((key) => properties[key] === undefined && delete properties[key]);
 
   if (IS_LOCAL) {
-    // eslint-disable-next-line no-console
     console.debug(`[Amplitude] Event: ${name}, properties:`, properties);
   } else {
     getInstance().track(name, {
@@ -41,7 +34,6 @@ export const logClickConnectWallet = () => {
   logCore("click_connect_wallet");
 };
 
-
 export const logConnectWalletSuccess = () => {
   logCore("connect_wallet_success");
 };
@@ -61,35 +53,35 @@ export const logEnterTransactionHash = () => {
 
 export const logClickAddButton = () => {
   logCore("log_click_add_button");
-}
+};
 
-export const logClickGenerateLink = (txInfo?: { methodData: string, txHash: string }[]) => {
+export const logClickGenerateLink = (txInfo?: { methodData: string; txHash: string }[]) => {
   logCore("log_click_generate_link", {
-    ...txInfo && { txInfo },
+    ...(txInfo && { txInfo }),
   });
-}
+};
 
 export const logClickCopyLink = () => {
   logCore("log_click_copy_link");
-}
+};
 
 export const logClickPostToTwitter = () => {
   logCore("log_click_post_to_twitter");
-}
+};
 
 // View Page
 export const logViewLinkPage = () => {
   logCore("log_view_link_page");
-}
+};
 
 export const logClickTxDetail = () => {
   logCore("log_click_tx_detail");
-}
+};
 
 export const logClickSendTx = () => {
   logCore("log_click_send_tx");
-}
+};
 
 export const logFinishSendTx = (txHash: string) => {
   logCore("log_finish_send_tx", { txHash });
-}
+};

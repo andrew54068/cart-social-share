@@ -1,7 +1,7 @@
 import { MutableRefObject, useEffect, useRef } from "react";
 
 export default function useClickAway(
-  cb: (e: MouseEvent | TouchEvent) => void,
+  cb: (e: MouseEvent | TouchEvent) => void
 ): MutableRefObject<HTMLDivElement | null> {
   const ref = useRef<HTMLDivElement | null>(null);
   const refCb = useRef<(e: MouseEvent | TouchEvent) => void>(cb);
@@ -29,5 +29,3 @@ export default function useClickAway(
 
   return ref;
 }
-
-
