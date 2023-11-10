@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import theme from "./theme";
 import { useEffect } from 'react'
 import { ChakraProvider, Box } from '@chakra-ui/react';
@@ -20,19 +20,16 @@ function App() {
   return (
     <GlobalProvider>
       <ChakraProvider theme={theme}>
-        <BrowserRouter>
-          <Box margin="0 auto" width="100%">
-            <Navbar />
-            <Box margin="0 auto" maxW="560px" minH="100vh">
-
-              <Routes>
-                <Route path="/build-link" element={<BuildLink />} />
-                <Route path="/view" element={<View />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Box>
+        <Box margin="0 auto" width="100%">
+          <Navbar />
+          <Box margin="0 auto" maxW="560px" minH="100vh">
+            <Routes>
+              <Route path="/build-link" element={<BuildLink />} />
+              <Route path="/view" element={<View />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
           </Box>
-        </BrowserRouter>
+        </Box>
       </ChakraProvider>
     </GlobalProvider >
   )

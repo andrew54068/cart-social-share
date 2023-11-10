@@ -31,3 +31,20 @@ export const logPageView = (page: string) => {
     });
   }
 };
+
+export const logClickMenu = () => {
+  logCore("click_menu");
+};
+
+export const logClickConnectWallet = () => {
+  logCore("click_connect_wallet");
+};
+
+
+export const logConnectWalletSuccess = () => {
+  logCore("connect_wallet_success");
+};
+
+export const logClickBuildYourLink = () => {
+  logCore("log_click_build_your_link");
+};

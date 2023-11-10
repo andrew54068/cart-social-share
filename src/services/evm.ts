@@ -3,6 +3,7 @@ import { useContext, useEffect } from "react";
 import Web3 from "web3";
 // import { USER_ID_SESSION_KEY } from "src/constants";
 import { GlobalContext } from "../context/global";
+import { logConnectWalletSuccess } from "src/services/Amplitude";
 // import { setUserId as setAmplitudeUserId } from "./Amplitude/setting";
 
 export interface ExtendedEthereumProviderInterface
@@ -181,6 +182,11 @@ export const useEthereum = (): {
         method: "eth_requestAccounts",
       });
       setAccount(accounts[0]);
+
+      if (accounts.length > 0) {
+        logConnectWalletSuccess()
+      }
+
       return accounts;
     },
     disconnect: () =>

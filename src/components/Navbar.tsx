@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 import useClickAway from "src/hooks/useClickAway";
 import { useEthereum } from "src/services/evm";
 import formatAddress from "src/utils/formatAddress";
+import { logClickMenu, logClickConnectWallet, logClickBuildYourLink } from "src/services/Amplitude";
 
 const ListItem = ({ children, ...rest }: any) => (
   <ChakraListItem
@@ -36,7 +37,10 @@ export default function Navbar() {
   const { account, connect, disconnect } = useEthereum();
 
   const ref = useClickAway(() => setShowDropdown(false));
-  const toggleDropdown = () => setShowDropdown(!showDropdown);
+  const toggleDropdown = () => {
+    logClickMenu()
+    setShowDropdown(!showDropdown)
+  };
 
   useEffect(() => {
   }, [showDropdown]);
@@ -45,6 +49,10 @@ export default function Navbar() {
   const onClickCopyAccount = () => {
     navigator.clipboard
       .writeText(account || '')
+  }
+  const onClickConnect = () => () => {
+    account ? undefined : connect()
+    logClickConnectWallet()
   }
 
   return (
@@ -95,7 +103,7 @@ export default function Navbar() {
 
             <Link to="/build-link" >
               <ListItem>
-                <Flex alignItems="center">
+                <Flex alignItems="center" onClick={() => logClickBuildYourLink()}>
                   <Box as="span" ml="space.s">
                     Build Your Link
                   </Box>
@@ -103,7 +111,7 @@ export default function Navbar() {
               </ListItem>
             </Link>
 
-            <ListItem onClick={account ? undefined : connect}>
+            <ListItem onClick={onClickConnect}>
               <Flex alignItems="center" justify="space-between">
                 <Box as="span" ml="space.s" >
                   {account ? `${formatAddress(account)} ` : "Connect Wallet"}

@@ -1,3 +1,6 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+
 export * from './log'
 
 import * as amplitude from "@amplitude/analytics-browser";
