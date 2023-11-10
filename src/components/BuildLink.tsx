@@ -145,15 +145,14 @@ const App: React.FC = () => {
 
     const logData = replacedTxAndMethodData.reduce(
       (acc, txData) => {
-        acc.txHashes = [acc.txHashes, txData.txHash].filter(Boolean).join(",");
-        acc.methodNames = [acc.methodNames, txData.methodData?.name]
-          .filter(Boolean)
-          .join(",");
+        acc.txHashes = [acc.txHashes, txData.txHash];
+        acc.methodNames = [acc.methodNames, txData.methodData?.name];
+
         return acc;
       },
       {
-        txHashes: "",
-        methodNames: "",
+        txHashes: [],
+        methodNames: [],
       }
     );
 
@@ -196,7 +195,8 @@ const App: React.FC = () => {
     const encodedText = encodeURIComponent(text);
     const encodedURL = encodeURIComponent(url);
 
-    const twitterURL = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedURL}`;
+    const twitterURL = `https://twitter.com/intent/tweet?
+      text=${encodedText}&url=${encodedURL}`;
 
     window.open(twitterURL, "_blank");
   }
