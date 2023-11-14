@@ -22,6 +22,7 @@
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-prettier": "^5.0.1",
     "framer-motion": "^10.16.4",
+    "js-base64": "^3.7.5",
     "lodash": "^4.17.21",
     "query-string": "^8.1.0",
     "react": "^18.2.0",

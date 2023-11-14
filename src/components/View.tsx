@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
   AccordionPanel,
   AccordionIcon,
@@ -11,7 +11,11 @@ import {
   Text,
   useToast,
   Icon,
+  Grid,
+  GridItem,
+  Spinner,
 } from "@chakra-ui/react";
+import { GlobalContext } from "src/context/global";
 import { WarningIcon, SmallCloseIcon } from "@chakra-ui/icons";
 import { Link, useLocation } from "react-router-dom";
 import Button from "src/components/Button";
@@ -23,6 +27,8 @@ import getDoNothingTxData from "src/utils/getDoNothingTxData";
 import { DISCOUNT_CONTRACT_OP, ADDR_PLACEHOLDER } from "src/constants";
 import WalletIcon from "src/assets/wallet.svg?react";
 import useScanTxLink from "src/hooks/useScanTxLink";
+import getMintedNFT from "src/utils/getMintedNFT";
+import { getNetworkScanInfo } from "src/utils/networkScanInfo";
 import { logViewLinkPage, logClickTxDetail, logClickSendTx, logFinishSendTx } from "src/services/Amplitude";
 
 interface TxParameter {
@@ -48,19 +54,38 @@ interface TransactionInfo {
 const ViewTransaction: React.FC = () => {
   const location = useLocation();
   const { account, connect } = useEthereum();
+  const { chainId } = useContext(GlobalContext);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isParsingNFT, setIsParsingNFT] = useState<boolean>(false);
   const [displayTxInfo, setDisplayTxInfo] = useState<TransactionInfo[]>([]);
-
+  const [mintedNFTs, setMintedNFTs] = useState<
+    {
+      name: any;
+      image: any;
+      description: any;
+      tokenId: string;
+      address: string;
+    }[]
+  >([]);
   const toast = useToast();
 
   useEffect(() => {
     logViewLinkPage();
+    //@todo : remove testing code.
+    // (async function () {
+    //   console.log("account :", account);
+    //   if (!account) return;
+    //   const result = await getMintedNFT("0xf295c9240fe70b13b8a8bde89940cc4e4c6b5a449aca42f12e5b939ecd81871c", account);
+    //   console.log("result :", result);
+    //   if (result?.length > 0) {
+    //     setMintedNFTs(result);
+    //   }
+    // })();
   }, []);
 
   useEffect(() => {
     const parsed = queryString.parse(location.search);
 
-    console.log(" :parsed.txInfo", parsed.txInfo);
     const txInfo: TransactionInfo[] = JSON.parse((parsed.txInfo as string) || "[]");
     if (!account) return;
     // replace all ADDR_PLACEHOLDER with the address of the user
@@ -75,8 +100,9 @@ const ViewTransaction: React.FC = () => {
   }, [account, location.search]);
 
   // we only support optimism for now
-  const scanTxLink = useScanTxLink(10);
+  const scanTxLink = useScanTxLink(chainId || 10);
   const onClickSendTx = async () => {
+    if (!account) return;
     logClickSendTx();
     setIsLoading(true);
 
@@ -132,12 +158,21 @@ const ViewTransaction: React.FC = () => {
         ),
       });
       logFinishSendTx(txHash);
+      setIsParsingNFT(true);
+      const mintedNFTs = await getMintedNFT(txHash, account);
+      console.log("mintedNFTs :", mintedNFTs);
+
+      if (mintedNFTs.length > 0) {
+        setMintedNFTs(mintedNFTs);
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Error when sending tx", err);
     }
+    setIsParsingNFT(false);
     setIsLoading(false);
   };
 
+  const scanLink = getNetworkScanInfo(chainId || 10)?.scan;
   return (
     <Box p="20px" mt="75px" mb="75px">
       <Text fontSize="xl" mb={5}>
@@ -202,6 +237,90 @@ const ViewTransaction: React.FC = () => {
             Connect Wallet
           </Button>
         </Flex>
+      )}
+
+      {isParsingNFT && (
+        <Flex direction="column" alignItems="center" h="calc(100vh - 75px)" mt="80px">
+          <Spinner size="xl" />
+          <Text mt="space.s" mb="space.3xl" textAlign="center">
+            Parsing your NFTs. Please wait...
+          </Text>
+        </Flex>
+      )}
+
+      {mintedNFTs.length > 0 && (
+        <Box mt="space.5xl">
+          <Text fontSize="xl" mb={5}>
+            NFT You Minted
+          </Text>
+          <Grid templateColumns="repeat(2, 1fr)" gap={6}>
+            {mintedNFTs.map((nft, index) => (
+              <GridItem key={index} w="100%" h="100%">
+                {scanLink ? (
+                  <Link to={scanLink + "/token/" + nft.address} target="_blank">
+                    <Box
+                      key={index}
+                      mr="space.l"
+                      minH={246}
+                      minW="100%"
+                      boxShadow="xl"
+                      rounded="md"
+                      overflow="hidden"
+                      borderWidth="1px"
+                      borderColor="gray.200"
+                      backgroundColor="gray.200"
+                    >
+                      <img
+                        src={nft.image}
+                        alt={nft.name}
+                        style={{ width: "100%", height: "100%" }}
+                        onError={(e) => {
+                          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                          // @ts-expect-error
+                          e.target.style.display = "none";
+                        }}
+                      />
+                    </Box>
+                  </Link>
+                ) : (
+                  <Box
+                    key={index}
+                    mr="space.l"
+                    minH={246}
+                    minW="100%"
+                    boxShadow="xl"
+                    rounded="md"
+                    overflow="hidden"
+                    borderWidth="1px"
+                    borderColor="gray.200"
+                    backgroundColor="gray.200"
+                  >
+                    <img
+                      src={nft.image}
+                      alt={nft.name}
+                      style={{ width: "100%", height: "100%" }}
+                      onError={(e) => {
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-expect-error
+                        e.target.style.display = "none";
+                      }}
+                    />
+                  </Box>
+                )}
+
+                {nft.name ? (
+                  <Text mt="space.s" fontWeight="500">
+                    {nft.name}
+                  </Text>
+                ) : (
+                  <Text mt="space.s" fontWeight="500">
+                    {nft.address && nft.address.slice(0, 6) + "..." + nft.address.slice(-4)}
+                  </Text>
+                )}
+              </GridItem>
+            ))}
+          </Grid>
+        </Box>
       )}
 
       <Box pos="fixed" bottom="0" left="0" right="0" bg="white" p="20px" boxShadow="2xl">

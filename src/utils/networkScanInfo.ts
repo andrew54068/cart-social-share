@@ -58,8 +58,8 @@ const networkScanInfo: NetworkScanInfo[] = [
   },
 ];
 
-export const getNetworkScanInfo = (chainID: number): NetworkScanInfo | null => {
-  return networkScanInfo.find((value) => value.chainID === chainID) || null;
+export const getNetworkScanInfo = (chainID: number | string): NetworkScanInfo | null => {
+  return networkScanInfo.find((value) => +value.chainID === +chainID) || null;
 };
 
 export default networkScanInfo;
