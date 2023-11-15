@@ -40,7 +40,7 @@ export default function Navbar() {
   const onClickCopyAccount = () => {
     navigator.clipboard.writeText(account || "");
   };
-  const onClickConnect = () => () => {
+  const onClickConnect = () => {
     account ? undefined : connect();
     logClickConnectWallet();
   };
