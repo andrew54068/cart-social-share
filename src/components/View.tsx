@@ -137,6 +137,9 @@ const ViewTransaction: React.FC = () => {
         method: "blocto_sendBatchTransaction",
         params: batchTransactions,
       });
+
+      const parsedHash = Array.isArray(txHash) ? txHash[0] : txHash;
+
       toast({
         status: "success",
         position: "top",
@@ -147,7 +150,7 @@ const ViewTransaction: React.FC = () => {
         },
         render: () => (
           <Flex alignItems="center" bg="green.500" color="white" padding="20px" borderRadius="12px">
-            <Link to={scanTxLink + txHash} target="_blank" style={{ textDecoration: "underline" }}>
+            <Link to={scanTxLink + parsedHash} target="_blank" style={{ textDecoration: "underline" }}>
               <Icon as={WarningIcon} mr="8px" />
               Your Transaction is successfully sent!
             </Link>
@@ -157,9 +160,9 @@ const ViewTransaction: React.FC = () => {
           </Flex>
         ),
       });
-      logFinishSendTx(txHash);
+      logFinishSendTx(parsedHash);
       setIsParsingNFT(true);
-      const mintedNFTs = await getMintedNFT(txHash, account);
+      const mintedNFTs = await getMintedNFT(parsedHash, account);
       console.log("mintedNFTs :", mintedNFTs);
 
       if (mintedNFTs.length > 0) {
@@ -261,7 +264,7 @@ const ViewTransaction: React.FC = () => {
                     <Box
                       key={index}
                       mr="space.l"
-                      minH={246}
+                      pb="100%"
                       minW="100%"
                       boxShadow="xl"
                       rounded="md"
@@ -269,11 +272,19 @@ const ViewTransaction: React.FC = () => {
                       borderWidth="1px"
                       borderColor="gray.200"
                       backgroundColor="gray.200"
+                      position="relative"
                     >
                       <img
                         src={nft.image}
                         alt={nft.name}
-                        style={{ width: "100%", height: "100%" }}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          position: "absolute",
+                          top: "50%",
+                          left: "50%",
+                          transform: "translate(-50%, -50%)",
+                        }}
                         onError={(e) => {
                           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                           // @ts-expect-error
