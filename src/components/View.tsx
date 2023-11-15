@@ -29,6 +29,7 @@ import WalletIcon from "src/assets/wallet.svg?react";
 import useScanTxLink from "src/hooks/useScanTxLink";
 import getMintedNFT from "src/utils/getMintedNFT";
 import { getNetworkScanInfo } from "src/utils/networkScanInfo";
+import { logClickConnectWallet } from "src/services/Amplitude";
 import { logViewLinkPage, logClickTxDetail, logClickSendTx, logFinishSendTx } from "src/services/Amplitude";
 
 interface TxParameter {
@@ -175,6 +176,11 @@ const ViewTransaction: React.FC = () => {
     setIsLoading(false);
   };
 
+  const onClickConnect = () => {
+    connect();
+    logClickConnectWallet();
+  };
+
   const scanLink = getNetworkScanInfo(chainId || 10)?.scan;
   return (
     <Box p="20px" mt="75px" mb="75px">
@@ -236,7 +242,7 @@ const ViewTransaction: React.FC = () => {
           <Text mt="space.s" mb="space.3xl" textAlign="center">
             You need to connect your wallet to view your transaction.
           </Text>
-          <Button w="100%" onClick={connect} variant="support">
+          <Button w="100%" onClick={onClickConnect} variant="support">
             Connect Wallet
           </Button>
         </Flex>
