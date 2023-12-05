@@ -20,7 +20,7 @@ export const supportedChains = [
   // {
   //   name: "Ethereum Mainnet",
   //   chainId: "0x1",
-  //   rpcUrls: ["https://mainnet.infura.io/v3/ef5a5728e2354955b562d2ffa4ae5305"],
+  //   rpcUrls: [`https://mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`],
   //   environment: "mainnet",
   // },
   // {
