@@ -70,7 +70,7 @@ const ViewTransaction: React.FC = () => {
   const { account, connect } = useEthereum();
   const { chainId } = useContext(GlobalContext);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [kol, setKol] = useState<string>(false);
+  const [kol, setKol] = useState<string>("");
   const [isParsingNFT, setIsParsingNFT] = useState<boolean>(false);
   const [displayTxInfo, setDisplayTxInfo] = useState<TransactionInfo[]>([]);
   const [mintedNFTs, setMintedNFTs] = useState<
