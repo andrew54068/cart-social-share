@@ -293,20 +293,22 @@ const ViewTransaction: React.FC = () => {
                     <Text width="100%" fontWeight="bold">
                       Parameters:
                     </Text>
-                    <List pl="4px">
+                    <Accordion allowToggle>
+                      {" "}
+                      {/* Add allowToggle for better UX */}
                       {tx?.methodData?.params &&
                         tx?.methodData?.params?.map((param, pIndex) => (
-                          <ListItem key={param.name + pIndex}>
-                            <Flex key={pIndex}>
-                              <Text fontWeight="bold">{`${pIndex + 1}. ${param.name} `}</Text>
-                              <Box as="span" ml="space.5xs">
-                                :{" "}
+                          <AccordionItem key={param.name + pIndex} border={0}>
+                            <AccordionButton>
+                              <Box flex="1" textAlign="left" fontWeight="600">
+                                {`${pIndex + 1}. ${param.name}`}
                               </Box>
-                            </Flex>
-                            <Text pl="space.s"> {param.value}</Text>
-                          </ListItem>
+                              <AccordionIcon />
+                            </AccordionButton>
+                            <AccordionPanel pb={4}>{param.value}</AccordionPanel>
+                          </AccordionItem>
                         ))}
-                    </List>
+                    </Accordion>
                   </Box>
 
                   <Text wordBreak="break-all" textAlign="start" mb="space.s">
