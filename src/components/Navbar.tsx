@@ -35,8 +35,6 @@ export default function Navbar() {
     setShowDropdown(!showDropdown);
   };
 
-  useEffect(() => { }, [showDropdown]);
-
   const onClickCopyAccount = () => {
     navigator.clipboard.writeText(account || "");
   };

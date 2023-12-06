@@ -15,9 +15,7 @@ import {
   Grid,
   GridItem,
   Spinner,
-  List,
   Card,
-  ListItem,
 } from "@chakra-ui/react";
 import { GlobalContext } from "src/context/global";
 import { WarningIcon, SmallCloseIcon } from "@chakra-ui/icons";
@@ -206,6 +204,12 @@ const ViewTransaction: React.FC = () => {
 
   const onCopyKol = (address) => () => {
     navigator.clipboard.writeText(address || "");
+    toast({
+      description: "Copy address successfully!",
+      status: "info",
+      duration: 3000,
+      position: "top",
+    });
   };
   return (
     <Box p="20px" mt="75px" mb="75px">
@@ -316,7 +320,9 @@ const ViewTransaction: React.FC = () => {
                       {" "}
                       Data:{" "}
                     </Box>
-                    <Box>{tx.data}</Box>
+                    <Box maxHeight="110px" overflowY="scroll">
+                      {tx.data}
+                    </Box>
                   </Text>
                 </AccordionPanel>
               </AccordionItem>
