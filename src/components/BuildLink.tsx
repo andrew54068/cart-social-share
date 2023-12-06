@@ -20,7 +20,7 @@ import {
 } from "src/services/Amplitude";
 
 const generateReadableCallData = (methodData: any) => {
-  return methodData.name;
+  return methodData?.name;
 };
 
 const App: React.FC = () => {

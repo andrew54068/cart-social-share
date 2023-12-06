@@ -253,7 +253,7 @@ const ViewTransaction: React.FC = () => {
                     <Box as="span" fontWeight="bold">
                       Function Name:{" "}
                     </Box>
-                    <Box>{tx?.methodData.name}</Box>
+                    <Box>{tx?.methodData?.name}</Box>
                   </Text>
 
                   <Box mb="space.m">
@@ -261,7 +261,7 @@ const ViewTransaction: React.FC = () => {
                       Parameters:
                     </Text>
                     <List pl="4px">
-                      {tx?.methodData.params &&
+                      {tx?.methodData?.params &&
                         tx?.methodData?.params?.map((param, pIndex) => (
                           <ListItem key={param.name + pIndex}>
                             <Flex key={pIndex}>
