@@ -437,6 +437,9 @@ const ViewTransaction: React.FC = () => {
         <Button onClick={onClickSendTx} isDisabled={!account} isLoading={isLoading}>
           Send Tx
         </Button>
+        <Box mt="space.xs" textAlign="center" fontSize="size.body.5" width="100%" color="font.secondary">
+          This product is still in BETA. Please use at your own risk.
+        </Box>
       </Box>
     </Box>
   );
