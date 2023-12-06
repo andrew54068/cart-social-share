@@ -5,6 +5,7 @@ import {
   Accordion,
   AccordionItem,
   AccordionButton,
+  Image,
   Flex,
   Box,
   VStack,
@@ -15,6 +16,7 @@ import {
   GridItem,
   Spinner,
   List,
+  Card,
   ListItem,
 } from "@chakra-ui/react";
 import { GlobalContext } from "src/context/global";
@@ -26,11 +28,13 @@ import { bloctoSDK, useEthereum } from "src/services/evm";
 import strip0x from "src/utils/strip0x";
 import toHex from "src/utils/toHex";
 import getDoNothingTxData from "src/utils/getDoNothingTxData";
-import { DISCOUNT_CONTRACT_OP, ADDR_PLACEHOLDER } from "src/constants";
+import { DISCOUNT_CONTRACT_OP, ADDR_PLACEHOLDER, KOL_INFO_MAPPING } from "src/constants";
 import WalletIcon from "src/assets/wallet.svg?react";
+import CopyIcon from "src/assets/copy.svg?react";
 import ProjectLogoIcon from "src/assets/project_logo.svg?react";
 import useScanTxLink from "src/hooks/useScanTxLink";
 import getMintedNFT from "src/utils/getMintedNFT";
+import formatAddress from "src/utils/formatAddress";
 import { getNetworkScanInfo } from "src/utils/networkScanInfo";
 import { logClickConnectWallet } from "src/services/Amplitude";
 import {
@@ -68,6 +72,7 @@ const ViewTransaction: React.FC = () => {
   const { account, connect } = useEthereum();
   const { chainId } = useContext(GlobalContext);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [kol, setKol] = useState<string>(false);
   const [isParsingNFT, setIsParsingNFT] = useState<boolean>(false);
   const [displayTxInfo, setDisplayTxInfo] = useState<TransactionInfo[]>([]);
   const [mintedNFTs, setMintedNFTs] = useState<
@@ -97,7 +102,8 @@ const ViewTransaction: React.FC = () => {
 
   useEffect(() => {
     const parsed = queryString.parse(location.search);
-
+    const kol = parsed.kol as string;
+    setKol(kol);
     const txInfo: TransactionInfo[] = JSON.parse((parsed.txInfo as string) || "[]");
     if (!account) return;
     // replace all ADDR_PLACEHOLDER with the address of the user
@@ -197,9 +203,36 @@ const ViewTransaction: React.FC = () => {
     window.open(`https://de.fi/scanner/contract/${address}?chainId=opt`, "_blank");
     logClickViewSafety();
   };
-  console.log(" :displayTxInfo", displayTxInfo);
+
+  const onCopyKol = (address) => () => {
+    navigator.clipboard.writeText(address || "");
+  };
   return (
     <Box p="20px" mt="75px" mb="75px">
+      {account && KOL_INFO_MAPPING?.[kol] && (
+        <Card boxShadow="0px 0px 20px 0px rgba(35, 37, 40, 0.05);" py="10px" px="16px" mb="space.xl">
+          <Flex alignItems="center">
+            <Box mr="space.s">
+              <Image src={KOL_INFO_MAPPING[kol].avatarUrl} width="52px" height="52px" borderRadius="100px" />
+            </Box>
+            <Box>
+              <Text fontWeight="bold" lineHeight="22px" fontSize="16px">
+                {KOL_INFO_MAPPING[kol].name}
+              </Text>
+              <Flex alignItems="center">
+                {" "}
+                <Box mr="space.4xs">{formatAddress(KOL_INFO_MAPPING[kol].account)}</Box>
+                <CopyIcon
+                  cursor="pointer"
+                  width="16px"
+                  height="16px"
+                  onClick={onCopyKol(KOL_INFO_MAPPING[kol].account)}
+                />
+              </Flex>
+            </Box>
+          </Flex>
+        </Card>
+      )}
       <Text fontSize="xl" mb={5}>
         View Your Transaction
       </Text>
