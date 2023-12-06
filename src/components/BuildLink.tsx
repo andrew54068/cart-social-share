@@ -191,7 +191,7 @@ const App: React.FC = () => {
         Build Your Link
       </Text>
       <Text fontSize="lg" mb="space.m">
-        Enter Transaction Hash From Optimism
+        Enter Transaction Hash From Arbitrum
       </Text>
       {txHashes.map((hash, index) => (
         <Fragment key={`${index}-${hash}`}>
