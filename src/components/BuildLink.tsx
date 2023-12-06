@@ -144,7 +144,7 @@ const App: React.FC = () => {
       setTxLink(window.location.origin + "/view?txInfo=" + encodeURIComponent(JSON.stringify(replacedTxAndMethodData)));
       setLoading(false);
     } catch (error) {
-      setTxLink(error.message);
+      setTxLink((error as Error).message);
       setLoading(false);
     }
   };

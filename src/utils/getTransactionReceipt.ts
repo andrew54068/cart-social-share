@@ -15,7 +15,7 @@ export default function getTransactionReceipt(txHash: string): Promise<Transacti
         // ignore the error for op
         // the page will not be found in the first few seconds after tx has been sent.
         // clearInterval(interval);
-        // reject(e);
+        reject(e);
       }
 
       return txResult;
