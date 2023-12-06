@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getNetworkScanInfo } from "./networkScanInfo";
 
-async function getABI(chainId: number, contractAddress?: string | null) {
+async function getABI(chainId: number | string, contractAddress?: string | null) {
   const networkInfo = getNetworkScanInfo(chainId);
   if (!networkInfo) throw new Error(`Not support ${chainId}`);
 

@@ -9,6 +9,7 @@ import MinusIcon from "src/assets/minus.svg?react";
 import Input from "./Input";
 import { useToast, Button as ChakraButton, Flex, Tag, VStack, Box, Text, Card } from "@chakra-ui/react";
 import Loading from "src/components/Loading";
+import { useEthereum } from "src/services/evm";
 import {
   logClickCopyLink,
   logClickGenerateLink,
@@ -24,6 +25,7 @@ const generateReadableCallData = (methodData: any) => {
 
 const App: React.FC = () => {
   const [txHashes, setTxHashes] = useState<string[]>([""]);
+  const { chainId } = useEthereum();
 
   const toast = useToast();
   const [txLink, setTxLink] = useState<string>("");
@@ -77,69 +79,74 @@ const App: React.FC = () => {
 
     console.log(`💥 txResult: ${JSON.stringify(txResult, null, "  ")}`);
 
-    const chainId = 10;
+    if (!chainId) return undefined;
 
-    // resolve the intent of transaction
-    const requests: any[] = [];
-    for (const txInfo of txResult) {
-      const request = async (txInfo) => {
-        let newTxDataWithMethodData = {};
+    try {
+      // resolve the intent of transaction
+      const requests: any[] = [];
+      for (const txInfo of txResult) {
+        const request = async (txInfo) => {
+          let newTxDataWithMethodData = {};
 
-        console.log(`💥 txInfo: ${JSON.stringify(txInfo, null, "  ")}`);
+          console.log(`💥 txInfo: ${JSON.stringify(txInfo, null, "  ")}`);
 
-        const contract = txInfo?.to;
-        if (txInfo && txInfo.data && txInfo.data !== "0x" && contract) {
-          const callData = txInfo.data;
-          const contractABI = await getABI(chainId, contract);
-          console.log(`💥 callData: ${JSON.stringify(callData, null, "  ")}`);
-          const methodData = await getMethodData(contractABI, chainId, contract, callData);
+          const contract = txInfo?.to;
+          if (txInfo && txInfo.data && txInfo.data !== "0x" && contract) {
+            const callData = txInfo.data;
+            const contractABI = await getABI(chainId, contract);
+            console.log(`💥 callData: ${JSON.stringify(callData, null, "  ")}`);
+            const methodData = await getMethodData(contractABI, chainId, contract, callData);
 
-          console.log(`💥 methodData: ${JSON.stringify(methodData, null, "  ")}`);
+            console.log(`💥 methodData: ${JSON.stringify(methodData, null, "  ")}`);
 
-          const readableCallData = generateReadableCallData(methodData);
+            const readableCallData = generateReadableCallData(methodData);
 
-          newTxDataWithMethodData = {
-            ...txInfo,
-            methodData,
-            readableCallData,
-          };
+            newTxDataWithMethodData = {
+              ...txInfo,
+              methodData,
+              readableCallData,
+            };
+          }
+
+          txDataWithMethodData.push(newTxDataWithMethodData);
+        };
+        requests.push(request(txInfo));
+      }
+      await Promise.all(requests);
+
+      const replacedTxAndMethodData = txDataWithMethodData.map((methodData) => {
+        const { data, from } = methodData;
+        let tempData = data;
+
+        if (tempData.includes(strip0x(from))) {
+          // replace all from with ADDR_PLACEHOLDER
+          tempData = tempData.replace(new RegExp(strip0x(from), "g"), ADDR_PLACEHOLDER);
         }
+        return { ...methodData, data: tempData };
+      });
 
-        txDataWithMethodData.push(newTxDataWithMethodData);
-      };
-      requests.push(request(txInfo));
+      const logData = replacedTxAndMethodData.reduce(
+        (acc, txData) => {
+          acc.txHashes = [acc.txHashes, txData.txHash];
+          acc.methodNames = [acc.methodNames, txData.methodData?.name];
+
+          return acc;
+        },
+        {
+          txHashes: [],
+          methodNames: [],
+        }
+      );
+
+      logClickGenerateLink(logData);
+
+      setTxDataWithMethodInfo(replacedTxAndMethodData);
+      setTxLink(window.location.origin + "/view?txInfo=" + encodeURIComponent(JSON.stringify(replacedTxAndMethodData)));
+      setLoading(false);
+    } catch (error) {
+      setTxLink(error.message);
+      setLoading(false);
     }
-    await Promise.all(requests);
-
-    const replacedTxAndMethodData = txDataWithMethodData.map((methodData) => {
-      const { data, from } = methodData;
-      let tempData = data;
-
-      if (tempData.includes(strip0x(from))) {
-        // replace all from with ADDR_PLACEHOLDER
-        tempData = tempData.replace(new RegExp(strip0x(from), "g"), ADDR_PLACEHOLDER);
-      }
-      return { ...methodData, data: tempData };
-    });
-
-    const logData = replacedTxAndMethodData.reduce(
-      (acc, txData) => {
-        acc.txHashes = [acc.txHashes, txData.txHash];
-        acc.methodNames = [acc.methodNames, txData.methodData?.name];
-
-        return acc;
-      },
-      {
-        txHashes: [],
-        methodNames: [],
-      }
-    );
-
-    logClickGenerateLink(logData);
-
-    setTxDataWithMethodInfo(replacedTxAndMethodData);
-    setTxLink(window.location.origin + "/view?txInfo=" + encodeURIComponent(JSON.stringify(replacedTxAndMethodData)));
-    setLoading(false);
   };
 
   const handleCopy = () => {

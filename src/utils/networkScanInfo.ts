@@ -16,8 +16,9 @@ const networkScanInfo: NetworkScanInfo[] = [
   {
     chainID: 42161,
     name: "Arbitrum One",
-    api: `https://api.arbiscan.io/api?module=contract&action=getabi&apikey=
-    ${import.meta.env.VITE_ARBISCAN_API_KEY}`,
+    api:
+      `https://api.arbiscan.io/api` +
+      encodeURI(`?module=contract&action=getabi&apikey=${import.meta.env.VITE_ARBISCAN_API_KEY}`),
     scan: "arbiscan.io",
   },
   {

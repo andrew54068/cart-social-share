@@ -2,7 +2,12 @@ import abiDecoder from "abi-decoder";
 import Web3 from "web3";
 import getABI from "./getABI";
 
-export default async function getMethodData(contractABI, chainId: number, contract: string, callData?: string) {
+export default async function getMethodData(
+  contractABI,
+  chainId: number | string,
+  contract: string,
+  callData?: string
+) {
   if (!callData) return null;
   if (!contractABI || contractABI == "") return null;
   const web3 = new Web3();
