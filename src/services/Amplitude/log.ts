@@ -77,6 +77,9 @@ export const logViewLinkPage = () => {
 export const logClickTxDetail = () => {
   logCore("log_click_tx_detail");
 };
+export const logClickViewSafety = () => {
+  logCore("log_click_view_safety");
+};
 
 export const logClickSendTx = () => {
   logCore("log_click_send_tx");

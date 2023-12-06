@@ -35,7 +35,7 @@ export default function Navbar() {
     setShowDropdown(!showDropdown);
   };
 
-  useEffect(() => {}, [showDropdown]);
+  useEffect(() => { }, [showDropdown]);
 
   const onClickCopyAccount = () => {
     navigator.clipboard.writeText(account || "");
@@ -59,7 +59,7 @@ export default function Navbar() {
     >
       <Flex justify="space-between" alignItems="center" width="100%">
         <Box fontSize="size.heading.4" fontWeight="weight.l">
-          <Link to="/build-link">Build Transaction Link</Link>
+          <Link to="/build-link">Batch Transaction Link</Link>
         </Box>
         <IconButton onClick={toggleDropdown} aria-label="menu-button" icon={<HamburgerIcon />} variant="outline" />
       </Flex>

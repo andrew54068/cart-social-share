@@ -14,6 +14,8 @@ import {
   Grid,
   GridItem,
   Spinner,
+  List,
+  ListItem,
 } from "@chakra-ui/react";
 import { GlobalContext } from "src/context/global";
 import { WarningIcon, SmallCloseIcon } from "@chakra-ui/icons";
@@ -26,11 +28,18 @@ import toHex from "src/utils/toHex";
 import getDoNothingTxData from "src/utils/getDoNothingTxData";
 import { DISCOUNT_CONTRACT_OP, ADDR_PLACEHOLDER } from "src/constants";
 import WalletIcon from "src/assets/wallet.svg?react";
+import ProjectLogoIcon from "src/assets/project_logo.svg?react";
 import useScanTxLink from "src/hooks/useScanTxLink";
 import getMintedNFT from "src/utils/getMintedNFT";
 import { getNetworkScanInfo } from "src/utils/networkScanInfo";
 import { logClickConnectWallet } from "src/services/Amplitude";
-import { logViewLinkPage, logClickTxDetail, logClickSendTx, logFinishSendTx } from "src/services/Amplitude";
+import {
+  logViewLinkPage,
+  logClickTxDetail,
+  logClickSendTx,
+  logFinishSendTx,
+  logClickViewSafety,
+} from "src/services/Amplitude";
 
 interface TxParameter {
   name: string;
@@ -44,13 +53,15 @@ interface TransactionInfo {
   name: string;
   methodData: {
     name: string;
-    parameters: {
+    params: {
       name: string;
       value: string;
     }[];
   };
   parameters: TxParameter[];
 }
+
+const TX_PROJECT_NAME = "Mint.fun";
 
 const ViewTransaction: React.FC = () => {
   const location = useLocation();
@@ -182,6 +193,11 @@ const ViewTransaction: React.FC = () => {
   };
 
   const scanLink = getNetworkScanInfo(chainId || 10)?.scan;
+  const onSeeSafetyDetail = (address) => () => {
+    window.open(`https://de.fi/scanner/contract/${address}?chainId=opt`, "_blank");
+    logClickViewSafety();
+  };
+  console.log(" :displayTxInfo", displayTxInfo);
   return (
     <Box p="20px" mt="75px" mb="75px">
       <Text fontSize="xl" mb={5}>
@@ -197,40 +213,76 @@ const ViewTransaction: React.FC = () => {
               spacing={3}
               mb={4}
               borderRadius="12px"
+              overflow="hidden"
               boxShadow="0px 0px 20px 0px rgba(35, 37, 40, 0.05);"
             >
               <AccordionItem border={0} width="100%" onClick={logClickTxDetail}>
                 <h2>
-                  <AccordionButton p="space.l">
+                  <AccordionButton p="space.l" overflow="hidden">
                     <Box as="span" flex="1" textAlign="left" fontSize="size.heading.5" fontWeight="600">
-                      {tx?.methodData.name ? `Possible Intent: ${tx?.methodData.name}` : "Transaction - " + index}
+                      {/* {tx?.methodData.name ? `Possible Intent: ${tx?.methodData.name}` : "Transaction - " + index} */}
+                      <Flex alignItems="center">
+                        <Box mr="space.2xs">
+                          <ProjectLogoIcon />
+                        </Box>
+                        <Box>{TX_PROJECT_NAME}</Box>
+                      </Flex>
                     </Box>
                     <AccordionIcon />
                   </AccordionButton>
                 </h2>
-                <AccordionPanel pb={4}>
+                <AccordionPanel pb={4} px="space.l">
+                  <Box mb="space.s">
+                    <Text width="100%" fontWeight="bold">
+                      Interact With:
+                    </Text>
+                    <Box wordBreak="break-all">{tx.to}</Box>
+                    <Button
+                      fontWeight="400"
+                      px="space.m"
+                      py="space.s"
+                      variant="support"
+                      onClick={onSeeSafetyDetail(tx.to)}
+                      mt="space.s"
+                    >
+                      See Safety Detail
+                    </Button>
+                  </Box>
+
                   <Text wordBreak="break-all" textAlign="start" mb="space.s">
                     <Box as="span" fontWeight="bold">
+                      Function Name:{" "}
+                    </Box>
+                    <Box>{tx?.methodData.name}</Box>
+                  </Text>
+
+                  <Box mb="space.m">
+                    <Text width="100%" fontWeight="bold">
+                      Parameters:
+                    </Text>
+                    <List pl="4px">
+                      {tx?.methodData.params &&
+                        tx?.methodData?.params?.map((param, pIndex) => (
+                          <ListItem key={param.name + pIndex}>
+                            <Flex key={pIndex}>
+                              <Text fontWeight="bold">{`${pIndex + 1}. ${param.name} `}</Text>
+                              <Box as="span" ml="space.5xs">
+                                :{" "}
+                              </Box>
+                            </Flex>
+                            <Text pl="space.s"> {param.value}</Text>
+                          </ListItem>
+                        ))}
+                    </List>
+                  </Box>
+
+                  <Text wordBreak="break-all" textAlign="start" mb="space.s">
+                    <Box as="span" fontWeight="bold" width="100%">
                       {" "}
                       Data:{" "}
                     </Box>
-                    {tx.data}
+                    <Box>{tx.data}</Box>
                   </Text>
-                  <Flex>
-                    <Text fontWeight="bold">To:</Text>
-                    <Box as="span" ml="4px" wordBreak="break-all">
-                      {tx.to}
-                    </Box>
-                  </Flex>
-
-                  {tx?.methodData.parameters &&
-                    tx?.methodData?.parameters?.map((param, pIndex) => (
-                      <Flex key={pIndex}>
-                        <Text fontWeight="bold">{param.name}</Text>
-                        <Box as="span"> : </Box>
-                        <Text ml="4px"> {param.value}</Text>
-                      </Flex>
-                    ))}
                 </AccordionPanel>
               </AccordionItem>
             </VStack>
