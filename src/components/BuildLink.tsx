@@ -13,34 +13,56 @@ import Loading from "src/components/Loading";
 import { useEthereum } from "src/services/evm";
 import {
   logClickCopyLink,
-  logClickGenerateLink,
+  // logClickGenerateLink,
   logClickAddButton,
   logEnterTransactionHash,
   logViewBuildPage,
   logClickPostToTwitter,
 } from "src/services/Amplitude";
 
-const generateReadableCallData = (methodData: any) => {
+const generateReadableCallData = (methodData) => {
   return methodData?.name;
 };
 
-type TxProxyContract = {
+type TransactionStatus = {
   txhash: string;
   proxyContract: string | null;
+  errorMessage: string;
+  loading: boolean;
+};
+
+type TxDataWithMethodData = {
+  from: string;
+  to: string | null;
+  value: string;
+  data: string | null;
+  methodData: any;
+  readableCallData: string;
 };
 
 const App: React.FC = () => {
-  const [txHasheProxyContract, setTxHasheProxyContract] = useState<TxProxyContract[]>([
+  const [txStatus, setTxStatus] = useState<TransactionStatus[]>([
     {
       txhash: "",
       proxyContract: null,
+      errorMessage: "",
+      loading: false,
+    },
+  ]);
+  const [txDataWithMethodData, setTxDataWithMethodData] = useState<TxDataWithMethodData[]>([
+    {
+      from: "",
+      to: null,
+      data: null,
+      value: "",
+      methodData: null,
+      readableCallData: "",
     },
   ]);
   const { chainId } = useEthereum();
 
   const toast = useToast();
   const [txLink, setTxLink] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
   const [readyForSharing, setReadyForSharing] = useState<boolean>(false);
   const [txDataWithMethodInfo, setTxDataWithMethodInfo] = useState<
     {
@@ -60,116 +82,174 @@ const App: React.FC = () => {
     setReadyForSharing(!!txLink);
   }, [txLink]);
 
-  const handleAddLink = () => {
-    setTxHasheProxyContract((prev) => [...prev, { txhash: "", proxyContract: null }]);
-    setTxLink("");
-    logClickAddButton();
-  };
-
-  const handleChangeLink = (index: number, value: string) => {
-    setTxHasheProxyContract((prev) => {
-      const updatedHashes = [...prev];
-      updatedHashes[index].txhash = value;
-      return updatedHashes;
-    });
-  };
-
-  const handleChangeProxy = (index: number, value: string) => {
-    console.log(`💥 ab`);
-    setTxHasheProxyContract((prev) => {
-      const updatedHashes = [...prev];
-      updatedHashes[index].proxyContract = value;
-      return updatedHashes;
-    });
-    setTxLink("");
-  };
-
-  const onClickGenerate = async () => {
-    setLoading(true);
-    const hasEmptyLink = txHasheProxyContract.some((link) => link.txhash === "");
-    const hasInvalidLink = txHasheProxyContract.some(
-      (link) => !link.txhash.startsWith("0x") || link.txhash.length !== 66
-    );
+  const parseTxInfo = async (index: number, currentTxStatus: TransactionStatus) => {
+    console.log(`💥 currentTxStatus: ${JSON.stringify(currentTxStatus, null, "  ")}`);
+    const hasEmptyLink = currentTxStatus.txhash === "";
+    const hasInvalidLink = !currentTxStatus.txhash.startsWith("0x") || currentTxStatus.txhash.length !== 66;
 
     if (hasEmptyLink || hasInvalidLink) {
-      // @todo show error
-      return undefined;
+      handleError(index, "has empty hash or has invalid hash");
+      return;
     }
 
-    const txDataWithMethodData: any[] = [];
+    const txResults = await getTxInfo([currentTxStatus.txhash]);
 
-    const txResult = await getTxInfo([...txHasheProxyContract.map((value) => value.txhash)]);
-
-    console.log(`💥 txResult: ${JSON.stringify(txResult, null, "  ")}`);
+    console.log(`💥 txResults: ${JSON.stringify(txResults, null, "  ")}`);
 
     if (!chainId) return undefined;
 
     try {
-      // resolve the intent of transaction
-      const requests: any[] = [];
-      for (const [index, txInfo] of txResult.entries()) {
-        const request = async (txInfo) => {
-          let newTxDataWithMethodData = {};
+      const txResult = txResults[0];
 
-          console.log(`💥 txInfo: ${JSON.stringify(txInfo, null, "  ")}`);
+      let newTxDataWithMethodData: TxDataWithMethodData = {
+        from: "",
+        data: null,
+        to: null,
+        value: "",
+        methodData: null,
+        readableCallData: "",
+      };
 
-          const contract = txInfo?.to;
-          if (txInfo && txInfo.data && txInfo.data !== "0x" && contract) {
-            const callData = txInfo.data;
-            const contractABI = await getABI(chainId, contract, txHasheProxyContract[index].proxyContract);
-            console.log(`💥 callData: ${JSON.stringify(callData, null, "  ")}`);
-            const methodData = await getMethodData(contractABI, chainId, contract, callData);
+      console.log(`💥 currentTxStatus: ${JSON.stringify(currentTxStatus, null, "  ")}`);
 
-            console.log(`💥 methodData: ${JSON.stringify(methodData, null, "  ")}`);
+      const contract = txResult?.to;
+      if (txResult && txResult.data && txResult.data !== "0x" && contract) {
+        const callData = txResult.data;
+        const contractABI = await getABI(chainId, contract, txStatus[index].proxyContract);
+        console.log(`💥 callData: ${JSON.stringify(callData, null, "  ")}`);
+        const methodData = await getMethodData(contractABI, chainId, contract, callData);
 
-            const readableCallData = generateReadableCallData(methodData);
+        if (!methodData) {
+          handleError(index, "Can't parse ABI");
+        }
 
-            newTxDataWithMethodData = {
-              ...txInfo,
-              methodData,
-              readableCallData,
-            };
-          }
+        console.log(`💥 methodData: ${JSON.stringify(methodData, null, "  ")}`);
 
-          txDataWithMethodData.push(newTxDataWithMethodData);
+        const readableCallData = generateReadableCallData(methodData);
+
+        newTxDataWithMethodData = {
+          ...txResult,
+          methodData,
+          readableCallData,
         };
-        requests.push(request(txInfo));
+      } else {
+        newTxDataWithMethodData = {
+          ...txResult,
+          methodData: "",
+          readableCallData: "",
+        };
+        handleError(index, "Couldn't find tx result or just a simple transfer.");
       }
-      await Promise.all(requests);
-
-      const replacedTxAndMethodData = txDataWithMethodData.map((methodData) => {
-        const { data, from } = methodData;
-        let tempData = data;
-
-        if (tempData.includes(strip0x(from))) {
-          // replace all from with ADDR_PLACEHOLDER
-          tempData = tempData.replace(new RegExp(strip0x(from), "g"), ADDR_PLACEHOLDER);
-        }
-        return { ...methodData, data: tempData };
-      });
-
-      const logData = replacedTxAndMethodData.reduce(
-        (acc, txData) => {
-          acc.txHashes = [acc.txHashes, txData.txHash];
-          acc.methodNames = [acc.methodNames, txData.methodData?.name];
-
-          return acc;
-        },
-        {
-          txHashes: [],
-          methodNames: [],
-        }
-      );
-
-      logClickGenerateLink(logData);
-
-      setTxDataWithMethodInfo(replacedTxAndMethodData);
-      setTxLink(window.location.origin + "/view?txInfo=" + encodeURIComponent(JSON.stringify(replacedTxAndMethodData)));
-      setLoading(false);
+      const finalData = [...txDataWithMethodData];
+      finalData[index] = newTxDataWithMethodData;
+      setTxDataWithMethodData(finalData);
+      console.log(`💥 newTxDataWithMethodData: ${JSON.stringify(newTxDataWithMethodData, null, "  ")}`);
     } catch (error) {
-      setTxLink((error as Error).message);
-      setLoading(false);
+      handleError(index, (error as Error).message);
     }
+  };
+
+  const onClickGenerate = async () => {
+    const replacedTxAndMethodInfo = txDataWithMethodData.map((methodData) => {
+      const { data, from } = methodData;
+      let tempData = data;
+
+      if (tempData && tempData.includes(strip0x(from))) {
+        // replace all from with ADDR_PLACEHOLDER
+        tempData = tempData.replace(new RegExp(strip0x(from), "g"), ADDR_PLACEHOLDER);
+      }
+      return {
+        to: methodData.to || "",
+        data: tempData || "",
+        value: +methodData.value,
+        methodData: methodData,
+        readableCallData: methodData.readableCallData,
+      };
+    });
+
+    // const logData = replacedTxAndMethodData.reduce(
+    //   (acc, txData) => {
+    //     acc.txHashes = [acc.txHashes, txData.txHash];
+    //     acc.methodNames = [acc.methodNames, txData.methodData?.name];
+
+    //     return acc;
+    //   },
+    //   {
+    //     txHashes: [],
+    //     methodNames: [],
+    //   }
+    // );
+
+    // logClickGenerateLink(logData);
+
+    setTxDataWithMethodInfo(replacedTxAndMethodInfo);
+    setTxLink(window.location.origin + "/view?txInfo=" + encodeURIComponent(JSON.stringify(replacedTxAndMethodInfo)));
+  };
+
+  const handleAddLink = () => {
+    setTxStatus((prev) => [...prev, { txhash: "", proxyContract: null, errorMessage: "", loading: false }]);
+    setTxLink("");
+    setTxDataWithMethodData((prev) => {
+      const updatedTxDataWithMethodData = [...prev];
+      updatedTxDataWithMethodData.push({
+        from: "",
+        data: null,
+        to: null,
+        value: "",
+        methodData: null,
+        readableCallData: "",
+      });
+      return updatedTxDataWithMethodData;
+    });
+    logClickAddButton();
+  };
+
+  const resetReadableCallData = (index: number) => {
+    setTxDataWithMethodData((prev) => {
+      const updatedStatus = [...prev];
+      updatedStatus[index].readableCallData = "";
+      return updatedStatus;
+    });
+  };
+
+  const handleLoadingState = (index: number, value: boolean) => {
+    setTxStatus((prev) => {
+      const updatedStatus = [...prev];
+      updatedStatus[index].loading = value;
+      return updatedStatus;
+    });
+  };
+
+  const resetError = (index: number) => {
+    setTxStatus((prev) => {
+      const updatedStatus = [...prev];
+      updatedStatus[index].errorMessage = "";
+      return updatedStatus;
+    });
+  };
+
+  const handleError = (index: number, value: string) => {
+    setTxStatus((prev) => {
+      const updatedStatus = [...prev];
+      updatedStatus[index].errorMessage = value;
+      return updatedStatus;
+    });
+  };
+
+  const handleChangeLink = (index: number, value: string) => {
+    setTxStatus((prev) => {
+      const updatedStatus = [...prev];
+      updatedStatus[index].txhash = value;
+      return updatedStatus;
+    });
+  };
+
+  const handleChangeProxy = async (index: number, value: string) => {
+    setTxStatus((prev) => {
+      const updatedStatus = [...prev];
+      updatedStatus[index].proxyContract = value;
+      return updatedStatus;
+    });
   };
 
   const handleCopy = () => {
@@ -184,32 +264,41 @@ const App: React.FC = () => {
     logClickCopyLink();
   };
 
-  const onRemoveTx = (index) => () => {
-    setTxHasheProxyContract((prev) => {
+  const onRemoveTx = (index: number) => () => {
+    setTxStatus((prev) => {
       const updatedHashes = [...prev];
       updatedHashes.splice(index, 1);
       return updatedHashes;
+    });
+    setTxDataWithMethodData((prev) => {
+      const updatedTxDataWithMethodData = [...prev];
+      updatedTxDataWithMethodData.splice(index, 1);
+      return updatedTxDataWithMethodData;
     });
     setTxLink("");
   };
 
   const onAddProxyContractInput = (index: number) => () => {
-    setTxHasheProxyContract((prev) => {
+    resetError(index);
+    setTxStatus((prev) => {
       const updatedHashes = [...prev];
       const element = updatedHashes[index];
       element.proxyContract = "";
       return updatedHashes;
     });
+    resetReadableCallData(index);
     setTxLink("");
   };
 
   const onRemoveProxyInput = (index: number) => () => {
-    setTxHasheProxyContract((prev) => {
+    resetError(index);
+    setTxStatus((prev) => {
       const updatedHashes = [...prev];
       const element = updatedHashes[index];
       element.proxyContract = null;
       return updatedHashes;
     });
+    resetReadableCallData(index);
     setTxLink("");
   };
 
@@ -223,13 +312,25 @@ const App: React.FC = () => {
     window.open(twitterURL, "_blank");
   }
 
-  const onHashInputChange = (index) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onHashInputChange = (index: number) => async (e: React.ChangeEvent<HTMLInputElement>) => {
+    resetError(index);
+    handleLoadingState(index, true);
     handleChangeLink(index, e.target.value);
+    const updatedStatus = [...txStatus];
+    updatedStatus[index].txhash = e.target.value;
+    await parseTxInfo(index, updatedStatus[index]);
+    handleLoadingState(index, false);
     logEnterTransactionHash();
   };
 
-  const onProxyInputChange = (index) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onProxyInputChange = (index: number) => async (e: React.ChangeEvent<HTMLInputElement>) => {
+    resetError(index);
+    handleLoadingState(index, true);
     handleChangeProxy(index, e.target.value);
+    const updatedStatus = [...txStatus];
+    updatedStatus[index].proxyContract = e.target.value;
+    await parseTxInfo(index, updatedStatus[index]);
+    handleLoadingState(index, false);
     // add event here
   };
 
@@ -241,11 +342,26 @@ const App: React.FC = () => {
       <Text fontSize="lg" mb="space.m">
         Enter Transaction Hash From Arbitrum
       </Text>
-      {txHasheProxyContract.map((hashWithProxyContract, index) => (
-        <Fragment key={`${index}-${hashWithProxyContract}`}>
+      {txStatus.map((transactionStatus, index) => (
+        <Fragment key={`${index}-${transactionStatus}`}>
           <Flex alignItems="center" w="100%" mb="space.xs" columnGap="20px">
+            {transactionStatus.loading && (
+              <Flex
+                top="0"
+                right="0"
+                bottom="0"
+                left="0"
+                // bg="rgba(255,255,255,0.5)"
+                alignItems="center"
+                justifyContent="center"
+                zIndex={1}
+              >
+                <Loading />
+              </Flex>
+            )}
+
             <Input
-              value={hashWithProxyContract.txhash}
+              value={transactionStatus.txhash}
               onChange={onHashInputChange(index)}
               placeholder="Enter transaction hash here"
               rightElement={
@@ -265,9 +381,9 @@ const App: React.FC = () => {
                 </ChakraButton>
               }
             />
-            {hashWithProxyContract.proxyContract != null ? (
+            {transactionStatus.proxyContract != null ? (
               <Input
-                value={hashWithProxyContract.proxyContract}
+                value={transactionStatus.proxyContract}
                 onChange={onProxyInputChange(index)}
                 placeholder="Enter proxy contract address here"
                 rightElement={
@@ -304,9 +420,14 @@ const App: React.FC = () => {
               </ChakraButton>
             )}
           </Flex>
-          {txDataWithMethodInfo.length > index && (
+          {transactionStatus.errorMessage && (
+            <Tag key={`error ${index}`} mb="space.xs" color="red">
+              Error: {transactionStatus.errorMessage}
+            </Tag>
+          )}
+          {txDataWithMethodData.length > index && txDataWithMethodData[index].readableCallData && (
             <Tag key={`Text ${index}`} mb="space.xs">
-              Possible Intent: {txDataWithMethodInfo[index].readableCallData}
+              Possible Intent: {txDataWithMethodData[index].readableCallData}
             </Tag>
           )}
         </Fragment>
@@ -328,21 +449,6 @@ const App: React.FC = () => {
             value={txDataWithMethodInfo.length ? txLink : "Your link will be shown here"}
           />
         </Box>
-        {loading && (
-          <Flex
-            pos="absolute"
-            top="0"
-            right="0"
-            bottom="0"
-            left="0"
-            bg="rgba(255,255,255,0.5)"
-            alignItems="center"
-            justifyContent="center"
-            zIndex={1}
-          >
-            <Loading />
-          </Flex>
-        )}
         {readyForSharing ? (
           <>
             <Button mb="space.m" onClick={handleCopy}>

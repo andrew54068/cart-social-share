@@ -15,6 +15,14 @@ export default async function getMethodData(
 
   const decodedData = abiDecoder.decodeMethod(callData);
   console.log(`💥 decodedData: ${JSON.stringify(decodedData, null, "  ")}`);
+  if (
+    !decodedData &&
+    contractABI.some(
+      (value) => value.name == "implementation" || value.name == "upgradeTo" || value.name == "upgradeToAndCall"
+    )
+  ) {
+    throw new Error(`It's likely a proxy contract.`);
+  }
 
   abiDecoder.removeABI(contractABI);
   if (!decodedData || Object.keys(decodedData).length === 0) {
