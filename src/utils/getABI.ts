@@ -19,7 +19,7 @@ async function getABI(chainId: number | string, contractAddress?: string | null,
       throw new Error(response.data.result);
     }
   } catch (error) {
-    console.log(`💥 error: ${JSON.stringify(error, null, '  ')}`);
+    console.log(`💥 error: ${JSON.stringify(error, null, "  ")}`);
     throw error;
   }
 }
