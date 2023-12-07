@@ -103,10 +103,12 @@ const ViewTransaction: React.FC = () => {
     const kol = parsed.kol as string;
     setKol(kol);
     const txInfo: TransactionInfo[] = JSON.parse((parsed.txInfo as string) || "[]");
-    if (!account) return;
+
+    const zeroAddress = "0x" + "0".repeat(40);
+    const accountAddress = account || zeroAddress;
     // replace all ADDR_PLACEHOLDER with the address of the user
     const transformedTxInfo = txInfo.map((tx) => {
-      const tempTx = tx.data.replace(new RegExp(`${ADDR_PLACEHOLDER}`, "g"), strip0x(account));
+      const tempTx = tx.data.replace(new RegExp(`${ADDR_PLACEHOLDER}`, "g"), strip0x(accountAddress));
       return {
         ...tx,
         data: tempTx,
@@ -191,6 +193,27 @@ const ViewTransaction: React.FC = () => {
     setIsLoading(false);
   };
 
+  const showConnectWalletToast = () => {
+    toast({
+      status: "warning",
+      position: "top",
+      duration: 2000,
+      isClosable: true,
+      containerStyle: {
+        marginTop: "20px",
+      },
+      render: () => (
+        <Flex alignItems="center" bg="green.500" color="white" padding="20px" borderRadius="12px">
+          <Icon as={WarningIcon} mr="8px" />
+          Please Connect Wallet First!
+          <Box onClick={() => toast.closeAll()} ml="8px" cursor="pointer" p="4px">
+            <SmallCloseIcon />
+          </Box>
+        </Flex>
+      ),
+    });
+  };
+
   const onClickConnect = () => {
     connect();
     logClickConnectWallet();
@@ -211,9 +234,10 @@ const ViewTransaction: React.FC = () => {
       position: "top",
     });
   };
+
   return (
-    <Box p="20px" mt="75px" mb="75px">
-      {account && KOL_INFO_MAPPING?.[kol] && (
+    <Box p="20px" h="calc(100vh - 75px)" mt="75px" mb="0" boxShadow="2xl" bgColor="white">
+      {KOL_INFO_MAPPING?.[kol] && (
         <Card boxShadow="0px 0px 20px 0px rgba(35, 37, 40, 0.05);" py="10px" px="16px" mb="space.xl">
           <Flex alignItems="center">
             <Box mr="space.s">
@@ -241,105 +265,100 @@ const ViewTransaction: React.FC = () => {
         View Your Transaction
       </Text>
 
-      {account ? (
-        <Accordion defaultIndex={[0]} allowMultiple>
-          {displayTxInfo.map((tx, index) => (
-            <VStack
-              key={index}
-              align="start"
-              spacing={3}
-              mb={4}
-              borderRadius="12px"
-              overflow="hidden"
-              boxShadow="0px 0px 20px 0px rgba(35, 37, 40, 0.05);"
-            >
-              <AccordionItem border={0} width="100%" onClick={logClickTxDetail}>
-                <h2>
-                  <AccordionButton p="space.l" overflow="hidden">
-                    <Box as="span" flex="1" textAlign="left" fontSize="size.heading.5" fontWeight="600">
-                      {/* {tx?.methodData.name ? `Possible Intent: ${tx?.methodData.name}` : "Transaction - " + index} */}
-                      <Flex alignItems="center">
-                        <Box mr="space.2xs">
-                          <ProjectLogoIcon />
-                        </Box>
-                        <Box>{TX_PROJECT_NAME}</Box>
-                      </Flex>
-                    </Box>
-                    <AccordionIcon />
-                  </AccordionButton>
-                </h2>
-                <AccordionPanel pb={4} px="space.l">
-                  <Box mb="space.s">
-                    <Text width="100%" fontWeight="bold">
-                      Interact With:
-                    </Text>
-                    <Box wordBreak="break-all">{tx.to}</Box>
-                    <Button
-                      fontWeight="400"
-                      px="space.m"
-                      py="space.s"
-                      variant="support"
-                      onClick={onSeeSafetyDetail(tx.to)}
-                      mt="space.s"
-                    >
-                      See Safety Detail
-                    </Button>
+      <Accordion
+        defaultIndex={[]}
+        allowMultiple
+        allowToggle={false}
+        onClick={() => {
+          !account && showConnectWalletToast();
+        }}
+      >
+        {displayTxInfo.map((tx, index) => (
+          <VStack
+            key={index}
+            align="start"
+            spacing={3}
+            mb={4}
+            borderRadius="12px"
+            overflow="hidden"
+            boxShadow="0px 0px 20px 0px rgba(35, 37, 40, 0.05);"
+          >
+            <AccordionItem border={0} width="100%" onClick={logClickTxDetail}>
+              <h2>
+                <AccordionButton p="space.l" overflow="hidden">
+                  <Box as="span" flex="1" textAlign="left" fontSize="size.heading.5" fontWeight="600">
+                    {/* {tx?.methodData.name ? `Possible Intent: ${tx?.methodData.name}` : "Transaction - " + index} */}
+                    <Flex alignItems="center">
+                      <Box mr="space.2xs">
+                        <ProjectLogoIcon />
+                      </Box>
+                      <Box>{TX_PROJECT_NAME}</Box>
+                    </Flex>
                   </Box>
-
-                  <Text wordBreak="break-all" textAlign="start" mb="space.s">
-                    <Box as="span" fontWeight="bold">
-                      Function Name:{" "}
-                    </Box>
-                    <Box>{tx?.methodData?.name}</Box>
+                  <AccordionIcon />
+                </AccordionButton>
+              </h2>
+              <AccordionPanel pb={4} px="space.l" filter={account ? "" : "blur(3px)"}>
+                <Box mb="space.s">
+                  <Text width="100%" fontWeight="bold">
+                    Interact With:
                   </Text>
+                  <Box wordBreak="break-all">{tx.to}</Box>
+                  <Button
+                    fontWeight="400"
+                    px="space.m"
+                    py="space.s"
+                    variant="support"
+                    onClick={onSeeSafetyDetail(tx.to)}
+                    mt="space.s"
+                  >
+                    Safety Check
+                  </Button>
+                </Box>
 
-                  <Box mb="space.m">
-                    <Text width="100%" fontWeight="bold">
-                      Parameters:
-                    </Text>
-                    <Accordion allowToggle>
-                      {" "}
-                      {/* Add allowToggle for better UX */}
-                      {tx?.methodData?.params &&
-                        tx?.methodData?.params?.map((param, pIndex) => (
-                          <AccordionItem key={param.name + pIndex} border={0}>
-                            <AccordionButton>
-                              <Box flex="1" textAlign="left" fontWeight="600">
-                                {`${pIndex + 1}. ${param.name}`}
-                              </Box>
-                              <AccordionIcon />
-                            </AccordionButton>
-                            <AccordionPanel pb={4}>{param.value}</AccordionPanel>
-                          </AccordionItem>
-                        ))}
-                    </Accordion>
+                <Text wordBreak="break-all" textAlign="start" mb="space.s">
+                  <Box as="span" fontWeight="bold">
+                    Function Name:{" "}
                   </Box>
+                  <Box>{tx?.methodData?.name}</Box>
+                </Text>
 
-                  <Text wordBreak="break-all" textAlign="start" mb="space.s">
-                    <Box as="span" fontWeight="bold" width="100%">
-                      {" "}
-                      Data:{" "}
-                    </Box>
-                    <Box maxHeight="110px" overflowY="scroll">
-                      {tx.data}
-                    </Box>
+                <Box mb="space.m">
+                  <Text width="100%" fontWeight="bold">
+                    Parameters:
                   </Text>
-                </AccordionPanel>
-              </AccordionItem>
-            </VStack>
-          ))}
-        </Accordion>
-      ) : (
-        <Flex direction="column" alignItems="center" h="calc(100vh - 75px)" mt="80px">
-          <WalletIcon width="72px" height="72px" />
-          <Text mt="space.s" mb="space.3xl" textAlign="center">
-            You need to connect your wallet to view your transaction.
-          </Text>
-          <Button w="100%" onClick={onClickConnect} variant="support">
-            Connect Wallet
-          </Button>
-        </Flex>
-      )}
+                  <Accordion allowToggle>
+                    {" "}
+                    {/* Add allowToggle for better UX */}
+                    {tx?.methodData?.params &&
+                      tx?.methodData?.params?.map((param, pIndex) => (
+                        <AccordionItem key={param.name + pIndex} border={0}>
+                          <AccordionButton>
+                            <Box flex="1" textAlign="left" fontWeight="600">
+                              {`${pIndex + 1}. ${param.name}`}
+                            </Box>
+                            <AccordionIcon />
+                          </AccordionButton>
+                          <AccordionPanel pb={4}>{param.value}</AccordionPanel>
+                        </AccordionItem>
+                      ))}
+                  </Accordion>
+                </Box>
+
+                <Text wordBreak="break-all" textAlign="start" mb="space.s">
+                  <Box as="span" fontWeight="bold" width="100%">
+                    {" "}
+                    Data:{" "}
+                  </Box>
+                  <Box maxHeight="110px" overflowY="scroll">
+                    {tx.data}
+                  </Box>
+                </Text>
+              </AccordionPanel>
+            </AccordionItem>
+          </VStack>
+        ))}
+      </Accordion>
 
       {isParsingNFT && (
         <Flex direction="column" alignItems="center" h="calc(100vh - 75px)" mt="80px">
@@ -433,9 +452,14 @@ const ViewTransaction: React.FC = () => {
         </Box>
       )}
 
-      <Box pos="fixed" bottom="0" left="0" right="0" bg="white" p="20px" boxShadow="2xl">
-        <Button onClick={onClickSendTx} isDisabled={!account} isLoading={isLoading}>
-          Send Tx
+      <Box pos="fixed" bottom="0" bg="white" p="20px" w="inherit">
+        <Button
+          onClick={() => {
+            account ? onClickSendTx() : onClickConnect();
+          }}
+          isLoading={isLoading}
+        >
+          {account ? `Send` : `Connect Wallet`}
         </Button>
         <Box mt="space.xs" textAlign="center" fontSize="size.body.5" width="100%" color="font.secondary">
           This product is still in BETA. Please use at your own risk.

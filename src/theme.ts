@@ -117,7 +117,7 @@ const theme = extendTheme(
             height: "46px",
             py: "space.s",
             px: "space.m",
-            bg: "interaction.primary",
+            bg: "#76D68A",
             color: "font.inverse",
             borderRadius: "100px",
             _hover: {

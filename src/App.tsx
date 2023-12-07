@@ -20,9 +20,9 @@ function App() {
   return (
     <GlobalProvider>
       <ChakraProvider theme={theme}>
-        <Box margin="0 auto" width="100%">
+        <Box margin="0 auto" width="100%" bgColor="#EEF1F5">
           <Navbar />
-          <Box margin="0 auto" maxW="560px" minH="100vh">
+          <Box margin="0 auto" maxW="560px">
             <Routes>
               <Route path="/build-link" element={<BuildLink />} />
               <Route path="/view" element={<View />} />
