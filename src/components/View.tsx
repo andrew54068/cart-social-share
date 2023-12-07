@@ -27,7 +27,6 @@ import strip0x from "src/utils/strip0x";
 import toHex from "src/utils/toHex";
 import getDoNothingTxData from "src/utils/getDoNothingTxData";
 import { DISCOUNT_CONTRACT_OP, ADDR_PLACEHOLDER, KOL_INFO_MAPPING } from "src/constants";
-import WalletIcon from "src/assets/wallet.svg?react";
 import CopyIcon from "src/assets/copy.svg?react";
 import ProjectLogoIcon from "src/assets/project_logo.svg?react";
 import useScanTxLink from "src/hooks/useScanTxLink";

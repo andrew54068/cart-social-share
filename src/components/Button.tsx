@@ -6,6 +6,7 @@ interface CustomButtonProps extends ButtonProps {
   isLoading?: boolean;
 }
 
+// eslint-disable-next-line react/display-name
 const Button = forwardRef<HTMLButtonElement, CustomButtonProps>(({ children, isLoading, onClick, ...rest }, ref) => {
   const handleClick: MouseEventHandler<HTMLButtonElement> = (event) => {
     if (!isLoading && onClick) {

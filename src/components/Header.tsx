@@ -5,7 +5,7 @@ import { HamburgerIcon } from "@chakra-ui/icons";
 const HamburgerMenu: React.FC = () => {
   return (
     <Menu>
-      {({ isOpen }) => (
+      {() => (
         <>
           <MenuButton
             as={IconButton}

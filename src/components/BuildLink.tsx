@@ -230,8 +230,6 @@ const App: React.FC = () => {
 
   const onProxyInputChange = (index) => (e: React.ChangeEvent<HTMLInputElement>) => {
     handleChangeProxy(index, e.target.value);
-    console.log(`💥 index: ${JSON.stringify(index, null, '  ')}`);
-    console.log(`💥 e.target.value: ${JSON.stringify(e.target.value, null, '  ')}`);
     // add event here
   };
 
