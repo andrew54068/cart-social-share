@@ -6,6 +6,7 @@ import strip0x from "src/utils/strip0x";
 import { ADDR_PLACEHOLDER } from "src/constants";
 import getMethodData from "src/utils/getMethodData";
 import MinusIcon from "src/assets/minus.svg?react";
+import AddIcon from "src/assets/add.svg?react";
 import Input from "./Input";
 import { useToast, Button as ChakraButton, Flex, Tag, VStack, Box, Text, Card } from "@chakra-ui/react";
 import Loading from "src/components/Loading";
@@ -23,8 +24,18 @@ const generateReadableCallData = (methodData: any) => {
   return methodData?.name;
 };
 
+type TxProxyContract = {
+  txhash: string;
+  proxyContract: string | null;
+};
+
 const App: React.FC = () => {
-  const [txHashes, setTxHashes] = useState<string[]>([""]);
+  const [txHasheProxyContract, setTxHasheProxyContract] = useState<TxProxyContract[]>([
+    {
+      txhash: "",
+      proxyContract: null,
+    },
+  ]);
   const { chainId } = useEthereum();
 
   const toast = useToast();
@@ -50,23 +61,35 @@ const App: React.FC = () => {
   }, [txLink]);
 
   const handleAddLink = () => {
-    setTxHashes((prev) => [...prev, ""]);
+    setTxHasheProxyContract((prev) => [...prev, { txhash: "", proxyContract: null }]);
     setTxLink("");
     logClickAddButton();
   };
 
   const handleChangeLink = (index: number, value: string) => {
-    setTxHashes((prev) => {
+    setTxHasheProxyContract((prev) => {
       const updatedHashes = [...prev];
-      updatedHashes[index] = value;
+      updatedHashes[index].txhash = value;
       return updatedHashes;
     });
   };
 
+  const handleChangeProxy = (index: number, value: string) => {
+    console.log(`💥 ab`);
+    setTxHasheProxyContract((prev) => {
+      const updatedHashes = [...prev];
+      updatedHashes[index].proxyContract = value;
+      return updatedHashes;
+    });
+    setTxLink("");
+  };
+
   const onClickGenerate = async () => {
     setLoading(true);
-    const hasEmptyLink = txHashes.some((link) => link === "");
-    const hasInvalidLink = txHashes.some((link) => !link.startsWith("0x") || link.length !== 66);
+    const hasEmptyLink = txHasheProxyContract.some((link) => link.txhash === "");
+    const hasInvalidLink = txHasheProxyContract.some(
+      (link) => !link.txhash.startsWith("0x") || link.txhash.length !== 66
+    );
 
     if (hasEmptyLink || hasInvalidLink) {
       // @todo show error
@@ -75,7 +98,7 @@ const App: React.FC = () => {
 
     const txDataWithMethodData: any[] = [];
 
-    const txResult = await getTxInfo([...txHashes]);
+    const txResult = await getTxInfo([...txHasheProxyContract.map((value) => value.txhash)]);
 
     console.log(`💥 txResult: ${JSON.stringify(txResult, null, "  ")}`);
 
@@ -84,7 +107,7 @@ const App: React.FC = () => {
     try {
       // resolve the intent of transaction
       const requests: any[] = [];
-      for (const txInfo of txResult) {
+      for (const [index, txInfo] of txResult.entries()) {
         const request = async (txInfo) => {
           let newTxDataWithMethodData = {};
 
@@ -93,7 +116,7 @@ const App: React.FC = () => {
           const contract = txInfo?.to;
           if (txInfo && txInfo.data && txInfo.data !== "0x" && contract) {
             const callData = txInfo.data;
-            const contractABI = await getABI(chainId, contract);
+            const contractABI = await getABI(chainId, contract, txHasheProxyContract[index].proxyContract);
             console.log(`💥 callData: ${JSON.stringify(callData, null, "  ")}`);
             const methodData = await getMethodData(contractABI, chainId, contract, callData);
 
@@ -162,9 +185,29 @@ const App: React.FC = () => {
   };
 
   const onRemoveTx = (index) => () => {
-    setTxHashes((prev) => {
+    setTxHasheProxyContract((prev) => {
       const updatedHashes = [...prev];
       updatedHashes.splice(index, 1);
+      return updatedHashes;
+    });
+    setTxLink("");
+  };
+
+  const onAddProxyContractInput = (index: number) => () => {
+    setTxHasheProxyContract((prev) => {
+      const updatedHashes = [...prev];
+      const element = updatedHashes[index];
+      element.proxyContract = "";
+      return updatedHashes;
+    });
+    setTxLink("");
+  };
+
+  const onRemoveProxyInput = (index: number) => () => {
+    setTxHasheProxyContract((prev) => {
+      const updatedHashes = [...prev];
+      const element = updatedHashes[index];
+      element.proxyContract = null;
       return updatedHashes;
     });
     setTxLink("");
@@ -185,6 +228,13 @@ const App: React.FC = () => {
     logEnterTransactionHash();
   };
 
+  const onProxyInputChange = (index) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleChangeProxy(index, e.target.value);
+    console.log(`💥 index: ${JSON.stringify(index, null, '  ')}`);
+    console.log(`💥 e.target.value: ${JSON.stringify(e.target.value, null, '  ')}`);
+    // add event here
+  };
+
   return (
     <VStack gap="0" alignItems="flex-start" margin="0 auto" mt="75px" pt="space.3xl" px="20px">
       <Text fontWeight="weight.l" fontSize="size.heading.3" mb="space.m">
@@ -193,11 +243,11 @@ const App: React.FC = () => {
       <Text fontSize="lg" mb="space.m">
         Enter Transaction Hash From Arbitrum
       </Text>
-      {txHashes.map((hash, index) => (
-        <Fragment key={`${index}-${hash}`}>
-          <Flex alignItems="center" w="100%" mb="space.xs">
+      {txHasheProxyContract.map((hashWithProxyContract, index) => (
+        <Fragment key={`${index}-${hashWithProxyContract}`}>
+          <Flex alignItems="center" w="100%" mb="space.xs" columnGap="20px">
             <Input
-              value={hash}
+              value={hashWithProxyContract.txhash}
               onChange={onHashInputChange(index)}
               placeholder="Enter transaction hash here"
               rightElement={
@@ -217,6 +267,44 @@ const App: React.FC = () => {
                 </ChakraButton>
               }
             />
+            {hashWithProxyContract.proxyContract != null ? (
+              <Input
+                value={hashWithProxyContract.proxyContract}
+                onChange={onProxyInputChange(index)}
+                placeholder="Enter proxy contract address here"
+                rightElement={
+                  <ChakraButton
+                    variant="secondary"
+                    w="32px"
+                    h="32px"
+                    color="icon.primary"
+                    p="space.m"
+                    minWidth="0"
+                    borderRadius="6px"
+                    onClick={onRemoveProxyInput(index)}
+                  >
+                    <Box pos="absolute" left="50%" top="50%" transform="translate(-50%,-50%)">
+                      <MinusIcon width="16px" height="16px" />
+                    </Box>
+                  </ChakraButton>
+                }
+              />
+            ) : (
+              <ChakraButton
+                variant="secondary"
+                w="32px"
+                h="32px"
+                color="icon.primary"
+                p="space.m"
+                minWidth="0"
+                borderRadius="6px"
+                onClick={onAddProxyContractInput(index)}
+              >
+                <Box pos="absolute" left="50%" top="50%" transform="translate(-50%,-50%)">
+                  <AddIcon width="16px" height="16px" />
+                </Box>
+              </ChakraButton>
+            )}
           </Flex>
           {txDataWithMethodInfo.length > index && (
             <Tag key={`Text ${index}`} mb="space.xs">

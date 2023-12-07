@@ -1,13 +1,13 @@
 import axios from "axios";
 import { getNetworkScanInfo } from "./networkScanInfo";
 
-async function getABI(chainId: number | string, contractAddress?: string | null) {
+async function getABI(chainId: number | string, contractAddress?: string | null, proxyContract: string | null = null) {
   const networkInfo = getNetworkScanInfo(chainId);
   if (!networkInfo) throw new Error(`Not support ${chainId}`);
 
   const response = await axios.get(networkInfo.api, {
     params: {
-      address: contractAddress,
+      address: proxyContract || contractAddress,
     },
   });
 
