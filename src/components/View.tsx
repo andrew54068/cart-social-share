@@ -42,16 +42,10 @@ import {
   logClickViewSafety,
 } from "src/services/Amplitude";
 
-interface TxParameter {
-  name: string;
-  value: string;
-}
-
-interface TransactionInfo {
+export interface TransactionInfo {
   data: string;
   to: string;
   value: string;
-  name: string;
   methodData: {
     name: string;
     params: {
@@ -59,7 +53,7 @@ interface TransactionInfo {
       value: string;
     }[];
   };
-  parameters: TxParameter[];
+  // parameters: TxParameter[];
 }
 
 const TX_PROJECT_NAME = "Mint.fun";
@@ -101,12 +95,12 @@ const ViewTransaction: React.FC = () => {
     const parsed = queryString.parse(location.search);
     const kol = parsed.kol as string;
     setKol(kol);
-    const txInfo: TransactionInfo[] = JSON.parse((parsed.txInfo as string) || "[]");
+    const parseResult: TransactionInfo[] = JSON.parse((parsed.txInfo as string) || "[]");
 
     const zeroAddress = "0x" + "0".repeat(40);
     const accountAddress = account || zeroAddress;
     // replace all ADDR_PLACEHOLDER with the address of the user
-    const transformedTxInfo = txInfo.map((tx) => {
+    const transformedTxInfo = parseResult.map((tx) => {
       const tempTx = tx.data.replace(new RegExp(`${ADDR_PLACEHOLDER}`, "g"), strip0x(accountAddress));
       return {
         ...tx,
@@ -235,7 +229,7 @@ const ViewTransaction: React.FC = () => {
   };
 
   return (
-    <Box p="20px" h="calc(100vh - 75px)" mt="75px" mb="0" boxShadow="2xl" bgColor="white">
+    <Box p="20px 20px 150px 20px" h="fit-content" mt="75px" mb="0" boxShadow="2xl" bgColor="white">
       {KOL_INFO_MAPPING?.[kol] && (
         <Card boxShadow="0px 0px 20px 0px rgba(35, 37, 40, 0.05);" py="10px" px="16px" mb="space.xl">
           <Flex alignItems="center">

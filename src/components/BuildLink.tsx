@@ -19,10 +19,7 @@ import {
   logViewBuildPage,
   logClickPostToTwitter,
 } from "src/services/Amplitude";
-
-const generateReadableCallData = (methodData) => {
-  return methodData?.name;
-};
+import { TransactionInfo } from "./View";
 
 type TransactionStatus = {
   txhash: string;
@@ -36,8 +33,15 @@ type TxDataWithMethodData = {
   to: string | null;
   value: string;
   data: string | null;
-  methodData: any;
-  readableCallData: string;
+  methodData: MethodData | null;
+};
+
+export type MethodData = {
+  name: string;
+  params: {
+    name: string;
+    value: string;
+  }[];
 };
 
 const App: React.FC = () => {
@@ -56,7 +60,6 @@ const App: React.FC = () => {
       data: null,
       value: "",
       methodData: null,
-      readableCallData: "",
     },
   ]);
   const { chainId } = useEthereum();
@@ -64,15 +67,7 @@ const App: React.FC = () => {
   const toast = useToast();
   const [txLink, setTxLink] = useState<string>("");
   const [readyForSharing, setReadyForSharing] = useState<boolean>(false);
-  const [txDataWithMethodInfo, setTxDataWithMethodInfo] = useState<
-    {
-      to: string;
-      data: string;
-      value: number;
-      methodData: any;
-      readableCallData: string;
-    }[]
-  >([]);
+  const [txDataWithMethodInfo, setTxDataWithMethodInfo] = useState<TransactionInfo[]>([]);
 
   useEffect(() => {
     logViewBuildPage();
@@ -107,7 +102,6 @@ const App: React.FC = () => {
         to: null,
         value: "",
         methodData: null,
-        readableCallData: "",
       };
 
       console.log(`💥 currentTxStatus: ${JSON.stringify(currentTxStatus, null, "  ")}`);
@@ -117,7 +111,7 @@ const App: React.FC = () => {
         const callData = txResult.data;
         const contractABI = await getABI(chainId, contract, txStatus[index].proxyContract);
         console.log(`💥 callData: ${JSON.stringify(callData, null, "  ")}`);
-        const methodData = await getMethodData(contractABI, chainId, contract, callData);
+        const methodData: MethodData = await getMethodData(contractABI, chainId, contract, callData);
 
         if (!methodData) {
           handleError(index, "Can't parse ABI");
@@ -125,18 +119,14 @@ const App: React.FC = () => {
 
         console.log(`💥 methodData: ${JSON.stringify(methodData, null, "  ")}`);
 
-        const readableCallData = generateReadableCallData(methodData);
-
         newTxDataWithMethodData = {
           ...txResult,
           methodData,
-          readableCallData,
         };
       } else {
         newTxDataWithMethodData = {
           ...txResult,
-          methodData: "",
-          readableCallData: "",
+          methodData: null,
         };
         handleError(index, "Couldn't find tx result or just a simple transfer.");
       }
@@ -150,40 +140,64 @@ const App: React.FC = () => {
   };
 
   const onClickGenerate = async () => {
-    const replacedTxAndMethodInfo = txDataWithMethodData.map((methodData) => {
-      const { data, from } = methodData;
-      let tempData = data;
+    try {
+      const replacedTxAndMethodInfo: TransactionInfo[] = txDataWithMethodData.map(
+        (txWithMethodData: TxDataWithMethodData) => {
+          const { data, from } = txWithMethodData;
+          let tempData = data;
 
-      if (tempData && tempData.includes(strip0x(from))) {
-        // replace all from with ADDR_PLACEHOLDER
-        tempData = tempData.replace(new RegExp(strip0x(from), "g"), ADDR_PLACEHOLDER);
-      }
-      return {
-        to: methodData.to || "",
-        data: tempData || "",
-        value: +methodData.value,
-        methodData: methodData,
-        readableCallData: methodData.readableCallData,
-      };
-    });
+          if (tempData && tempData.includes(strip0x(from))) {
+            // replace all from with ADDR_PLACEHOLDER
+            tempData = tempData.replace(new RegExp(strip0x(from), "g"), ADDR_PLACEHOLDER);
+          }
+          if (!txWithMethodData.methodData) {
+            throw new Error(`Can't find method data`);
+          }
+          if (!txWithMethodData.to) {
+            throw new Error(`Can't find to`);
+          }
+          // if (!tempData) {
+          //   throw new Error(`Can't find to`);
+          // }
+          return {
+            data: tempData || "",
+            to: txWithMethodData.to,
+            value: txWithMethodData.value,
+            methodData: {
+              name: txWithMethodData.methodData.name,
+              params: txWithMethodData.methodData.params,
+            },
+          };
+        }
+      );
 
-    // const logData = replacedTxAndMethodData.reduce(
-    //   (acc, txData) => {
-    //     acc.txHashes = [acc.txHashes, txData.txHash];
-    //     acc.methodNames = [acc.methodNames, txData.methodData?.name];
+      // const logData = replacedTxAndMethodData.reduce(
+      //   (acc, txData) => {
+      //     acc.txHashes = [acc.txHashes, txData.txHash];
+      //     acc.methodNames = [acc.methodNames, txData.methodData?.name];
 
-    //     return acc;
-    //   },
-    //   {
-    //     txHashes: [],
-    //     methodNames: [],
-    //   }
-    // );
+      //     return acc;
+      //   },
+      //   {
+      //     txHashes: [],
+      //     methodNames: [],
+      //   }
+      // );
 
-    // logClickGenerateLink(logData);
+      // logClickGenerateLink(logData);
 
-    setTxDataWithMethodInfo(replacedTxAndMethodInfo);
-    setTxLink(window.location.origin + "/view?txInfo=" + encodeURIComponent(JSON.stringify(replacedTxAndMethodInfo)));
+      console.log(`💥 replacedTxAndMethodInfo: ${JSON.stringify(replacedTxAndMethodInfo, null, "  ")}`);
+
+      setTxDataWithMethodInfo(replacedTxAndMethodInfo);
+      setTxLink(
+        window.location.origin +
+          "/view?txInfo=" +
+          encodeURIComponent(JSON.stringify(replacedTxAndMethodInfo)) +
+          "&kol=joethebeast"
+      );
+    } catch (error) {
+      setTxLink((error as Error).message);
+    }
   };
 
   const handleAddLink = () => {
@@ -197,7 +211,6 @@ const App: React.FC = () => {
         to: null,
         value: "",
         methodData: null,
-        readableCallData: "",
       });
       return updatedTxDataWithMethodData;
     });
@@ -207,7 +220,7 @@ const App: React.FC = () => {
   const resetReadableCallData = (index: number) => {
     setTxDataWithMethodData((prev) => {
       const updatedStatus = [...prev];
-      updatedStatus[index].readableCallData = "";
+      updatedStatus[index].methodData = null;
       return updatedStatus;
     });
   };
@@ -425,9 +438,9 @@ const App: React.FC = () => {
               Error: {transactionStatus.errorMessage}
             </Tag>
           )}
-          {txDataWithMethodData.length > index && txDataWithMethodData[index].readableCallData && (
+          {txDataWithMethodData.length > index && txDataWithMethodData[index].methodData?.name && (
             <Tag key={`Text ${index}`} mb="space.xs">
-              Possible Intent: {txDataWithMethodData[index].readableCallData}
+              Possible Intent: {txDataWithMethodData[index].methodData?.name || "can't find function name"}
             </Tag>
           )}
         </Fragment>
