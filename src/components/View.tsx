@@ -26,7 +26,7 @@ import { bloctoSDK, useEthereum } from "src/services/evm";
 import strip0x from "src/utils/strip0x";
 import toHex from "src/utils/toHex";
 import getDoNothingTxData from "src/utils/getDoNothingTxData";
-import { DISCOUNT_CONTRACT_OP, ADDR_PLACEHOLDER, KOL_INFO_MAPPING } from "src/constants";
+import { DISCOUNT_CONTRACT_OP, ADDR_PLACEHOLDER, KOL_INFO_MAPPING, APP_MAX_WIDTH } from "src/constants";
 import CopyIcon from "src/assets/copy.svg?react";
 import ProjectLogoIcon from "src/assets/project_logo.svg?react";
 import useScanTxLink from "src/hooks/useScanTxLink";
@@ -229,7 +229,15 @@ const ViewTransaction: React.FC = () => {
   };
 
   return (
-    <Box p="20px 20px 150px 20px" h="fit-content" mt="75px" mb="0" boxShadow="2xl" bgColor="white">
+    <Box
+      p="20px 20px 150px 20px"
+      h="fit-content"
+      my="90px"
+      mb="200px"
+      boxShadow="xl"
+      bgColor="white"
+      borderRadius="6px"
+    >
       {KOL_INFO_MAPPING?.[kol] && (
         <Card boxShadow="0px 0px 20px 0px rgba(35, 37, 40, 0.05);" py="10px" px="16px" mb="space.xl">
           <Flex alignItems="center">
@@ -445,17 +453,19 @@ const ViewTransaction: React.FC = () => {
         </Box>
       )}
 
-      <Box pos="fixed" bottom="0" bg="white" p="20px" w="inherit">
-        <Button
-          onClick={() => {
-            account ? onClickSendTx() : onClickConnect();
-          }}
-          isLoading={isLoading}
-        >
-          {account ? `Send` : `Connect Wallet`}
-        </Button>
-        <Box mt="space.xs" textAlign="center" fontSize="size.body.5" width="100%" color="font.secondary">
-          This product is still in BETA. Please use at your own risk.
+      <Box pos="fixed" bottom="0" left="0" bg="white" p="20px" w="100%">
+        <Box maxW={`${APP_MAX_WIDTH}px`} margin="0 auto">
+          <Button
+            onClick={() => {
+              account ? onClickSendTx() : onClickConnect();
+            }}
+            isLoading={isLoading}
+          >
+            {account ? `Send` : `Connect Wallet`}
+          </Button>
+          <Box mt="space.xs" textAlign="center" fontSize="size.body.5" width="100%" color="font.secondary">
+            This product is still in BETA. Please use at your own risk.
+          </Box>
         </Box>
       </Box>
     </Box>

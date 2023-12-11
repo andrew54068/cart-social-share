@@ -8,3 +8,5 @@ export const KOL_INFO_MAPPING = {
     account: "0x7c2c195CD6D34B8F845992d380aADB2730bB9C6F",
   },
 };
+
+export const APP_MAX_WIDTH = 650;

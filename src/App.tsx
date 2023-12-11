@@ -6,6 +6,7 @@ import "./App.css";
 import Navbar from "./components/Navbar";
 import View from "./components/View";
 import BuildLink from "./components/BuildLink";
+import { APP_MAX_WIDTH } from "./constants";
 import NotFound from "./components/NotFound";
 import { GlobalProvider } from "./context/globalContextProvider";
 import { logPageView } from "src/services/Amplitude";
@@ -22,7 +23,7 @@ function App() {
       <ChakraProvider theme={theme}>
         <Box margin="0 auto" width="100%" bgColor="#EEF1F5">
           <Navbar />
-          <Box margin="0 auto" maxW="650px">
+          <Box margin="0 auto" maxW={`${APP_MAX_WIDTH}px`}>
             <Routes>
               <Route path="/build-link" element={<BuildLink />} />
               <Route path="/view" element={<View />} />
