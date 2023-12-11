@@ -139,6 +139,15 @@ const App: React.FC = () => {
     }
   };
 
+  const getSharableLink = (transactionInfos: TransactionInfo[]) => {
+    const url =
+      window.location.origin +
+      "/view?txInfo=" +
+      encodeURIComponent(JSON.stringify(transactionInfos)) +
+      "&kol=joethebeast";
+    return url;
+  };
+
   const onClickGenerate = async () => {
     try {
       const replacedTxAndMethodInfo: TransactionInfo[] = txDataWithMethodData.map(
@@ -186,15 +195,21 @@ const App: React.FC = () => {
 
       // logClickGenerateLink(logData);
 
-      console.log(`💥 replacedTxAndMethodInfo: ${JSON.stringify(replacedTxAndMethodInfo, null, "  ")}`);
+      // console.log(`💥 replacedTxAndMethodInfo: ${JSON.stringify(replacedTxAndMethodInfo, null, "  ")}`);
+
+      const url = getSharableLink(replacedTxAndMethodInfo);
+
+      // console.log(
+      //   `💥 encodeURIComponent(JSON.stringify(replacedTxAndMethodInfo)): ${JSON.stringify(
+      //     encodeURIComponent(JSON.stringify(replacedTxAndMethodInfo)),
+      //     null,
+      //     "  "
+      //   )}`
+      // );
+      // console.log(`💥 url: ${JSON.stringify(url, null, "  ")}`);
 
       setTxDataWithMethodInfo(replacedTxAndMethodInfo);
-      setTxLink(
-        window.location.origin +
-          "/view?txInfo=" +
-          encodeURIComponent(JSON.stringify(replacedTxAndMethodInfo)) +
-          "&kol=joethebeast"
-      );
+      setTxLink(url);
     } catch (error) {
       setTxLink((error as Error).message);
     }
@@ -266,7 +281,7 @@ const App: React.FC = () => {
   };
 
   const handleCopy = () => {
-    const shareUrl = window.location.origin + "/view?txInfo=" + JSON.stringify(txDataWithMethodInfo);
+    const shareUrl = getSharableLink(txDataWithMethodInfo);
     navigator.clipboard.writeText(shareUrl);
     toast({
       description: "Your link has been copied to clipboard.",
