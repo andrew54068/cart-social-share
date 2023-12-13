@@ -26,7 +26,7 @@ import { bloctoSDK, useEthereum } from "src/services/evm";
 import strip0x from "src/utils/strip0x";
 import toHex from "src/utils/toHex";
 import getDoNothingTxData from "src/utils/getDoNothingTxData";
-import { DISCOUNT_CONTRACT_OP, ADDR_PLACEHOLDER, KOL_INFO_MAPPING, APP_MAX_WIDTH } from "src/constants";
+import { DISCOUNT_CONTRACT_OP, ADDR_PLACEHOLDER, KOL_INFO_MAPPING, APP_MAX_WIDTH, Timeswap_example } from "src/constants";
 import CopyIcon from "src/assets/copy.svg?react";
 import ProjectLogoIcon from "src/assets/project_logo.svg?react";
 import useScanTxLink from "src/hooks/useScanTxLink";
@@ -42,6 +42,7 @@ import {
   logClickViewSafety,
 } from "src/services/Amplitude";
 
+type StringBoolean = string | boolean;
 export interface TransactionInfo {
   data: string;
   to: string;
@@ -50,7 +51,7 @@ export interface TransactionInfo {
     name: string;
     params: {
       name: string;
-      value: string;
+      value: string | StringBoolean[];
     }[];
   };
   // parameters: TxParameter[];
@@ -95,7 +96,9 @@ const ViewTransaction: React.FC = () => {
     const parsed = queryString.parse(location.search);
     const kol = parsed.kol as string;
     setKol(kol);
-    const parseResult: TransactionInfo[] = JSON.parse((parsed.txInfo as string) || "[]");
+    // const parseResult: TransactionInfo[] = JSON.parse((parsed.txInfo as string) || "[]");
+    const parseResult: TransactionInfo[] = Timeswap_example;
+    console.log(`💥 parseResult: ${JSON.stringify(parseResult, null, '  ')}`);
 
     const zeroAddress = "0x" + "0".repeat(40);
     const accountAddress = account || zeroAddress;
