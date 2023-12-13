@@ -26,7 +26,13 @@ import { bloctoSDK, useEthereum } from "src/services/evm";
 import strip0x from "src/utils/strip0x";
 import toHex from "src/utils/toHex";
 import getDoNothingTxData from "src/utils/getDoNothingTxData";
-import { DISCOUNT_CONTRACT_OP, ADDR_PLACEHOLDER, KOL_INFO_MAPPING, APP_MAX_WIDTH, Timeswap_example } from "src/constants";
+import {
+  DISCOUNT_CONTRACT_OP,
+  ADDR_PLACEHOLDER,
+  KOL_INFO_MAPPING,
+  APP_MAX_WIDTH,
+  Timeswap_example,
+} from "src/constants";
 import CopyIcon from "src/assets/copy.svg?react";
 import ProjectLogoIcon from "src/assets/project_logo.svg?react";
 import useScanTxLink from "src/hooks/useScanTxLink";
@@ -56,7 +62,7 @@ export interface TransactionInfo {
   // parameters: TxParameter[];
 }
 
-const TX_PROJECT_NAME = "Mint.fun";
+const TX_PROJECT_NAME = "Timeswap.io";
 
 const ViewTransaction: React.FC = () => {
   const location = useLocation();
@@ -97,7 +103,7 @@ const ViewTransaction: React.FC = () => {
     setKol(kol);
     // const parseResult: TransactionInfo[] = JSON.parse((parsed.txInfo as string) || "[]");
     const parseResult: TransactionInfo[] = Timeswap_example;
-    console.log(`💥 parseResult: ${JSON.stringify(parseResult, null, '  ')}`);
+    console.log(`💥 parseResult: ${JSON.stringify(parseResult, null, "  ")}`);
 
     const zeroAddress = "0x" + "0".repeat(40);
     const accountAddress = account || zeroAddress;
@@ -293,7 +299,7 @@ const ViewTransaction: React.FC = () => {
                     {/* {tx?.methodData.name ? `Possible Intent: ${tx?.methodData.name}` : "Transaction - " + index} */}
                     <Flex alignItems="center">
                       <Box mr="space.2xs">
-                        <ProjectLogoIcon />
+                        <ProjectLogoIcon height="30px" width="30px" />
                       </Box>
                       <Box>{TX_PROJECT_NAME}</Box>
                     </Flex>
