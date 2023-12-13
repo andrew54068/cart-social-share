@@ -101,8 +101,8 @@ const ViewTransaction: React.FC = () => {
     const parsed = queryString.parse(location.search);
     const kol = parsed.kol as string;
     setKol(kol);
-    // const parseResult: TransactionInfo[] = JSON.parse((parsed.txInfo as string) || "[]");
-    const parseResult: TransactionInfo[] = Timeswap_example;
+    const parseResult: TransactionInfo[] = JSON.parse((parsed.txInfo as string) || "[]");
+    // const parseResult: TransactionInfo[] = Timeswap_example;
     console.log(`💥 parseResult: ${JSON.stringify(parseResult, null, "  ")}`);
 
     const zeroAddress = "0x" + "0".repeat(40);
