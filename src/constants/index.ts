@@ -94,7 +94,6 @@ export const Timeswap_example: TransactionInfo[] = [
             "7628578",
             "1701928883",
           ],
-          type: "tuple",
         },
       ],
     },

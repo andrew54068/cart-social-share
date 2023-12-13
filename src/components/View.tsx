@@ -42,7 +42,6 @@ import {
   logClickViewSafety,
 } from "src/services/Amplitude";
 
-type StringBoolean = string | boolean;
 export interface TransactionInfo {
   data: string;
   to: string;
@@ -51,7 +50,7 @@ export interface TransactionInfo {
     name: string;
     params: {
       name: string;
-      value: string | StringBoolean[];
+      value: string | (string | boolean)[];
     }[];
   };
   // parameters: TxParameter[];
